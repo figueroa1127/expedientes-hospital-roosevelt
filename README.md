@@ -119,7 +119,19 @@ git push -u origin main
 sesión la primera vez). El archivo `.gitignore` ya está configurado para no
 subir `node_modules`, la base de datos ni el archivo `.env` con secretos.
 
-## 7. Siguientes pasos sugeridos para la tesis
+## 7. Versión publicada en la nube
+
+El sistema está desplegado y accesible desde cualquier dispositivo:
+
+- **Interfaz web (frontend):** https://expedientes-hospital-roosevelt.vercel.app
+- **API (backend):** https://expedientes-hospital-api.onrender.com
+- **Base de datos:** PostgreSQL en la nube (Neon), conectada mediante la
+  variable `DATABASE_URL` en Render.
+
+> Nota: en el plan gratuito de Render la API se "duerme" tras unos minutos
+> de inactividad; la primera petición tras un rato puede tardar ~30 s.
+
+## 8. Siguientes pasos sugeridos para la tesis
 
 - Añadir el motor de interoperabilidad HL7/FHIR como una capa adicional
   sobre las rutas de `expedientes`.
