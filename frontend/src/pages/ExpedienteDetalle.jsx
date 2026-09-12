@@ -27,6 +27,11 @@ export default function ExpedienteDetalle() {
     await cargar();
   }
 
+  async function manejarActualizarAntecedentes(datos) {
+    await api.actualizarExpediente(token, expediente.id, datos);
+    await cargar();
+  }
+
   return (
     <div>
       <div className="encabezado-pagina">
@@ -42,7 +47,9 @@ export default function ExpedienteDetalle() {
         <VistaExpediente
           expediente={expediente}
           puedeRegistrarConsulta={usuario.rol === 'medico'}
+          puedeEditarAntecedentes={['medico', 'enfermeria', 'administrador'].includes(usuario.rol)}
           onAgregarConsulta={manejarNuevaConsulta}
+          onActualizarAntecedentes={manejarActualizarAntecedentes}
         />
       )}
     </div>

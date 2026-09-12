@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
-export default function VistaExpediente({ expediente, puedeRegistrarConsulta, onAgregarConsulta }) {
+export default function VistaExpediente({
+  expediente,
+  puedeRegistrarConsulta,
+  puedeEditarAntecedentes,
+  onAgregarConsulta,
+  onActualizarAntecedentes,
+}) {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [motivo, setMotivo] = useState('');
   const [diagnostico, setDiagnostico] = useState('');
@@ -8,6 +14,11 @@ export default function VistaExpediente({ expediente, puedeRegistrarConsulta, on
   const [medicamento, setMedicamento] = useState('');
   const [dosis, setDosis] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const [mostrarFormAntecedentes, setMostrarFormAntecedentes] = useState(false);
+  const [antecedentes, setAntecedentes] = useState(expediente?.antecedentes || '');
+  const [alergias, setAlergias] = useState(expediente?.alergias || '');
+  const [enviandoAntecedentes, setEnviandoAntecedentes] = useState(false);
 
   if (!expediente) {
     return <p className="vacio">Aún no hay un expediente registrado.</p>;
@@ -30,16 +41,80 @@ export default function VistaExpediente({ expediente, puedeRegistrarConsulta, on
     }
   }
 
+  async function manejarAntecedentes(e) {
+    e.preventDefault();
+    setEnviandoAntecedentes(true);
+    try {
+      await onActualizarAntecedentes({ antecedentes, alergias });
+      setMostrarFormAntecedentes(false);
+    } finally {
+      setEnviandoAntecedentes(false);
+    }
+  }
+
   return (
     <div>
       <div className="tarjeta">
         <h3>Datos clínicos generales</h3>
-        <p>
-          <strong>Antecedentes:</strong> {expediente.antecedentes || 'Sin antecedentes registrados.'}
-        </p>
-        <p>
-          <strong>Alergias:</strong> {expediente.alergias || 'Ninguna registrada.'}
-        </p>
+        {mostrarFormAntecedentes ? (
+          <form onSubmit={manejarAntecedentes}>
+            <div className="campo">
+              <label>Antecedentes (historial clínico)</label>
+              <textarea
+                rows={3}
+                value={antecedentes}
+                onChange={(e) => setAntecedentes(e.target.value)}
+              />
+            </div>
+            <div className="campo">
+              <label>Alergias</label>
+              <textarea
+                rows={2}
+                value={alergias}
+                onChange={(e) => setAlergias(e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                className="boton-primario"
+                type="submit"
+                disabled={enviandoAntecedentes}
+                style={{ width: 'auto' }}
+              >
+                {enviandoAntecedentes ? 'Guardando…' : 'Guardar antecedentes'}
+              </button>
+              <button
+                type="button"
+                className="boton-secundario"
+                onClick={() => setMostrarFormAntecedentes(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <p>
+              <strong>Antecedentes:</strong>{' '}
+              {expediente.antecedentes || 'Sin antecedentes registrados.'}
+            </p>
+            <p>
+              <strong>Alergias:</strong> {expediente.alergias || 'Ninguna registrada.'}
+            </p>
+            {puedeEditarAntecedentes && (
+              <button
+                className="boton-secundario"
+                onClick={() => {
+                  setAntecedentes(expediente.antecedentes || '');
+                  setAlergias(expediente.alergias || '');
+                  setMostrarFormAntecedentes(true);
+                }}
+              >
+                Editar antecedentes y alergias
+              </button>
+            )}
+          </>
+        )}
       </div>
 
       {puedeRegistrarConsulta && (
