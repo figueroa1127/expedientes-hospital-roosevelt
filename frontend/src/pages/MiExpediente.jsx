@@ -24,7 +24,12 @@ export default function MiExpediente() {
       {cargando ? (
         <p className="cargando">Cargando…</p>
       ) : (
-        <VistaExpediente expediente={expediente} puedeRegistrarConsulta={false} />
+        <VistaExpediente
+          expediente={expediente}
+          pacienteId={expediente?.paciente_id}
+          puedeRegistrarConsulta={false}
+          puedeRegistrarSignos={false}
+        />
       )}
     </div>
   );

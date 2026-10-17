@@ -115,6 +115,22 @@ CREATE TABLE IF NOT EXISTS ordenes_laboratorio (
   fecha_resultado TEXT
 );
 
+CREATE TABLE IF NOT EXISTS signos_vitales (
+  id SERIAL PRIMARY KEY,
+  paciente_id INTEGER NOT NULL REFERENCES pacientes(id) ON DELETE CASCADE,
+  registrado_por INTEGER REFERENCES usuarios(id),
+  fecha TEXT NOT NULL DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS'),
+  temperatura NUMERIC(4,1),
+  presion_sistolica INTEGER,
+  presion_diastolica INTEGER,
+  frecuencia_cardiaca INTEGER,
+  frecuencia_respiratoria INTEGER,
+  saturacion_oxigeno INTEGER,
+  peso NUMERIC(5,2),
+  talla NUMERIC(5,2),
+  notas TEXT
+);
+
 CREATE TABLE IF NOT EXISTS auditoria (
   id SERIAL PRIMARY KEY,
   usuario_id INTEGER REFERENCES usuarios(id),

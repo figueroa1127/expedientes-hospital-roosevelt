@@ -7,6 +7,7 @@ const ENLACES_POR_ROL = {
     { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
+    { to: '/signos', etiqueta: 'Signos vitales' },
     { to: '/citas', etiqueta: 'Citas' },
     { to: '/usuarios', etiqueta: 'Usuarios' },
   ],
@@ -21,6 +22,7 @@ const ENLACES_POR_ROL = {
     { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
+    { to: '/signos', etiqueta: 'Signos vitales' },
     { to: '/citas', etiqueta: 'Citas' },
   ],
   medico: [
@@ -28,6 +30,7 @@ const ENLACES_POR_ROL = {
     { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
+    { to: '/signos', etiqueta: 'Signos vitales' },
     { to: '/citas', etiqueta: 'Mi agenda' },
   ],
   paciente: [
@@ -85,6 +88,11 @@ const ICONOS = {
       <path d="M6 3h7l5 5v13H6z" />
       <path d="M13 3v5h5" />
       <path d="M9 13h6M9 17h6" />
+    </>
+  ),
+  '/signos': (
+    <>
+      <path d="M3 12h4l2-6 4 12 2-6h6" />
     </>
   ),
 };

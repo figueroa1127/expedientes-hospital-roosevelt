@@ -41,6 +41,11 @@ export const api = {
   actualizarOrdenLaboratorio: (token, id, datos) =>
     solicitud(`/laboratorio/${id}`, { method: 'PUT', body: datos, token }),
 
+  signos: (token) => solicitud('/signos', { token }),
+  misSignos: (token) => solicitud('/signos/mio', { token }),
+  signosDePaciente: (token, pacienteId) => solicitud(`/signos/paciente/${pacienteId}`, { token }),
+  crearSignos: (token, datos) => solicitud('/signos', { method: 'POST', body: datos, token }),
+
   reportesResumen: (token) => solicitud('/reportes/resumen', { token }),
 
   citas: (token) => solicitud('/citas', { token }),

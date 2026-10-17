@@ -11,6 +11,7 @@ import ExpedienteDetalle from './pages/ExpedienteDetalle';
 import MiExpediente from './pages/MiExpediente';
 import Citas from './pages/Citas';
 import Laboratorio from './pages/Laboratorio';
+import SignosVitales from './pages/SignosVitales';
 import Usuarios from './pages/Usuarios';
 
 export default function App() {
@@ -41,6 +42,14 @@ export default function App() {
               element={
                 <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'administrador']}>
                   <Laboratorio />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="/signos"
+              element={
+                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'administrador']}>
+                  <SignosVitales />
                 </RutaProtegida>
               }
             />

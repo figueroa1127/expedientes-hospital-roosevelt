@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../api';
 
 const ETIQUETA_ORDEN = {
   solicitada: 'Solicitada',
@@ -8,8 +10,10 @@ const ETIQUETA_ORDEN = {
 
 export default function VistaExpediente({
   expediente,
+  pacienteId,
   puedeRegistrarConsulta,
   puedeEditarAntecedentes,
+  puedeRegistrarSignos,
   puedeSolicitarOrden,
   puedeRegistrarResultado,
   onAgregarConsulta,
@@ -36,6 +40,26 @@ export default function VistaExpediente({
   const [enviandoOrden, setEnviandoOrden] = useState(false);
   const [resultadoAbierto, setResultadoAbierto] = useState(null);
   const [resultadoTexto, setResultadoTexto] = useState('');
+
+  const { token } = useAuth();
+  const [signos, setSignos] = useState([]);
+  const [cargandoSignos, setCargandoSignos] = useState(Boolean(pacienteId));
+  const [mostrarFormSignos, setMostrarFormSignos] = useState(false);
+  const [formSignos, setFormSignos] = useState({});
+  const [enviandoSignos, setEnviandoSignos] = useState(false);
+
+  useEffect(() => {
+    if (!pacienteId) return undefined;
+    let activo = true;
+    api
+      .signosDePaciente(token, pacienteId)
+      .then((s) => activo && setSignos(s))
+      .catch(() => {})
+      .finally(() => activo && setCargandoSignos(false));
+    return () => {
+      activo = false;
+    };
+  }, [token, pacienteId]);
 
   if (!expediente) {
     return <p className="vacio">Aún no hay un expediente registrado.</p>;
@@ -66,6 +90,19 @@ export default function VistaExpediente({
       setMostrarFormAntecedentes(false);
     } finally {
       setEnviandoAntecedentes(false);
+    }
+  }
+
+  async function manejarSignos(e) {
+    e.preventDefault();
+    setEnviandoSignos(true);
+    try {
+      await api.crearSignos(token, { ...formSignos, paciente_id: pacienteId });
+      setSignos(await api.signosDePaciente(token, pacienteId));
+      setFormSignos({});
+      setMostrarFormSignos(false);
+    } finally {
+      setEnviandoSignos(false);
     }
   }
 
@@ -159,6 +196,164 @@ export default function VistaExpediente({
               </button>
             )}
           </>
+        )}
+      </div>
+
+      <div className="tarjeta">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <h3 style={{ margin: 0 }}>Signos vitales</h3>
+          {puedeRegistrarSignos && !mostrarFormSignos && (
+            <button
+              className="boton-secundario"
+              onClick={() => {
+                setFormSignos({});
+                setMostrarFormSignos(true);
+              }}
+            >
+              + Registrar
+            </button>
+          )}
+        </div>
+
+        {mostrarFormSignos && (
+          <form onSubmit={manejarSignos} style={{ marginTop: 12 }}>
+            <div className="rejilla-signos">
+              <div className="campo">
+                <label>Temperatura (°C)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formSignos.temperatura || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, temperatura: e.target.value }))}
+                  placeholder="37"
+                />
+              </div>
+              <div className="campo">
+                <label>Presión sistólica</label>
+                <input
+                  type="number"
+                  value={formSignos.presion_sistolica || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, presion_sistolica: e.target.value }))}
+                  placeholder="120"
+                />
+              </div>
+              <div className="campo">
+                <label>Presión diastólica</label>
+                <input
+                  type="number"
+                  value={formSignos.presion_diastolica || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, presion_diastolica: e.target.value }))}
+                  placeholder="80"
+                />
+              </div>
+              <div className="campo">
+                <label>Frec. cardíaca (lpm)</label>
+                <input
+                  type="number"
+                  value={formSignos.frecuencia_cardiaca || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, frecuencia_cardiaca: e.target.value }))}
+                  placeholder="75"
+                />
+              </div>
+              <div className="campo">
+                <label>Frec. respiratoria (rpm)</label>
+                <input
+                  type="number"
+                  value={formSignos.frecuencia_respiratoria || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, frecuencia_respiratoria: e.target.value }))}
+                  placeholder="18"
+                />
+              </div>
+              <div className="campo">
+                <label>Saturación O₂ (%)</label>
+                <input
+                  type="number"
+                  value={formSignos.saturacion_oxigeno || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, saturacion_oxigeno: e.target.value }))}
+                  placeholder="98"
+                />
+              </div>
+              <div className="campo">
+                <label>Peso (kg)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formSignos.peso || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, peso: e.target.value }))}
+                  placeholder="70"
+                />
+              </div>
+              <div className="campo">
+                <label>Talla (cm)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formSignos.talla || ''}
+                  onChange={(e) => setFormSignos((p) => ({ ...p, talla: e.target.value }))}
+                  placeholder="170"
+                />
+              </div>
+            </div>
+            <div className="campo">
+              <label>Notas</label>
+              <textarea
+                rows={2}
+                value={formSignos.notas || ''}
+                onChange={(e) => setFormSignos((p) => ({ ...p, notas: e.target.value }))}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="boton-primario" type="submit" style={{ width: 'auto' }} disabled={enviandoSignos}>
+                {enviandoSignos ? 'Guardando…' : 'Guardar signos'}
+              </button>
+              <button type="button" className="boton-secundario" onClick={() => setMostrarFormSignos(false)}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        )}
+
+        {cargandoSignos ? (
+          <p className="vacio">Cargando…</p>
+        ) : signos.length === 0 ? (
+          <p className="vacio">Sin signos vitales registrados.</p>
+        ) : (
+          <div style={{ overflowX: 'auto', marginTop: 12 }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Temp.</th>
+                  <th>Presión</th>
+                  <th>F. cardíaca</th>
+                  <th>F. respiratoria</th>
+                  <th>SpO₂</th>
+                  <th>Peso</th>
+                  <th>Talla</th>
+                  <th>Registró</th>
+                </tr>
+              </thead>
+              <tbody>
+                {signos.map((s) => (
+                  <tr key={s.id}>
+                    <td>{new Date(s.fecha).toLocaleString('es-GT')}</td>
+                    <td>{s.temperatura ? `${s.temperatura} °C` : '—'}</td>
+                    <td>
+                      {s.presion_sistolica || s.presion_diastolica
+                        ? `${s.presion_sistolica || '—'}/${s.presion_diastolica || '—'}`
+                        : '—'}
+                    </td>
+                    <td>{s.frecuencia_cardiaca ? `${s.frecuencia_cardiaca} lpm` : '—'}</td>
+                    <td>{s.frecuencia_respiratoria ? `${s.frecuencia_respiratoria} rpm` : '—'}</td>
+                    <td>{s.saturacion_oxigeno ? `${s.saturacion_oxigeno} %` : '—'}</td>
+                    <td>{s.peso ? `${s.peso} kg` : '—'}</td>
+                    <td>{s.talla ? `${s.talla} cm` : '—'}</td>
+                    <td>{s.registrado_por_nombre || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

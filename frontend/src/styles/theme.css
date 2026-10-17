@@ -299,6 +299,12 @@ button {
   gap: 0 14px;
 }
 
+.rejilla-signos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0 14px;
+}
+
 .cambiar-modo {
   margin-top: 20px;
   padding-top: 16px;
