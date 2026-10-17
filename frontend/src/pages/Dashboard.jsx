@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import { GraficaBarras, GraficaDona, ListaRanking } from '../components/Graficas';
-import ilustracion from '../assets/ilustracion-panel.svg';
 
 const ETIQUETA_ESTADO = {
   programada: 'Programadas',
@@ -53,7 +52,7 @@ export default function Dashboard() {
             laboratorio, todo actualizado desde la base de datos.
           </p>
         </div>
-        <img src={ilustracion} alt="" aria-hidden="true" />
+        <img className="banner-foto" src="/fotos/equipo-medico.jpg" alt="Equipo médico del Hospital Roosevelt" />
       </div>
 
       <div className="rejilla">

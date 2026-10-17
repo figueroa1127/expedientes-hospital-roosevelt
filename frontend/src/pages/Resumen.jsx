@@ -49,6 +49,14 @@ export default function Resumen() {
         <p>{SALUDO_POR_ROL[usuario.rol]}</p>
       </div>
 
+      <div className="hero-resumen">
+        <h2>Hospital Roosevelt</h2>
+        <p>
+          Atención médica integral con expedientes digitales: consulta externa, emergencias,
+          hospitalización y laboratorio, todo en un mismo sistema.
+        </p>
+      </div>
+
       <div className="rejilla">
         <div className="metrica">
           <div className="valor">{citas.filter((c) => c.estado === 'programada').length}</div>
@@ -64,6 +72,25 @@ export default function Resumen() {
             <div className="etiqueta">Pacientes registrados</div>
           </div>
         )}
+      </div>
+
+      <div className="galeria">
+        <figure>
+          <img src="/fotos/consulta-medica.jpg" alt="Consulta médica" />
+          <figcaption>Consulta externa</figcaption>
+        </figure>
+        <figure>
+          <img src="/fotos/quirofano.jpg" alt="Quirófano" />
+          <figcaption>Quirófano</figcaption>
+        </figure>
+        <figure>
+          <img src="/fotos/corredor-hospital.jpg" alt="Corredor del hospital" />
+          <figcaption>Hospitalización</figcaption>
+        </figure>
+        <figure>
+          <img src="/fotos/personal-sonriente.jpg" alt="Personal médico" />
+          <figcaption>Nuestro equipo</figcaption>
+        </figure>
       </div>
 
       <div className="tarjeta">

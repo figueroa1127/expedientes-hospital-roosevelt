@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import ilustracion from '../assets/ilustracion-clinica.svg';
 
 const CUENTAS_DEMO = [
   { rol: 'Administrador', correo: 'admin@hospitalroosevelt.gt', password: 'Admin123!' },
@@ -51,7 +50,6 @@ export default function Login() {
             Un solo lugar para el historial clínico, las consultas y las citas de cada paciente,
             con acceso diferenciado para personal médico, administrativo y pacientes.
           </p>
-          <img className="ilustracion-login" src={ilustracion} alt="Expediente médico digital" />
         </div>
         <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
           Guatemala, Guatemala · Sistema de expedientes médicos digitales

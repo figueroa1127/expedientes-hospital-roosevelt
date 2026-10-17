@@ -180,7 +180,9 @@ button {
 }
 
 .login-lateral {
-  background: linear-gradient(155deg, #0b1e4d 0%, var(--azul-clinico) 45%, #3b82f6 100%);
+  background:
+    linear-gradient(155deg, rgba(11, 30, 77, 0.94) 0%, rgba(29, 78, 216, 0.86) 45%, rgba(59, 130, 246, 0.82) 100%),
+    url('/fotos/equipo-medico.jpg') center/cover no-repeat;
   color: var(--blanco);
   padding: 48px 56px;
   display: flex;
@@ -681,6 +683,92 @@ button {
   .banner-panel img {
     display: none;
   }
+}
+
+/* --- Fotografía del banner del panel ------------------------------ */
+.banner-panel .banner-foto {
+  width: 250px;
+  height: 158px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 0;
+  align-self: center;
+  filter: none;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 760px) {
+  .banner-panel .banner-foto {
+    display: none;
+  }
+}
+
+/* --- Héroe y galería con fotografías (resumen) -------------------- */
+.hero-resumen {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio);
+  padding: 30px 32px;
+  margin-bottom: 20px;
+  color: var(--blanco);
+  box-shadow: var(--sombra-lg);
+  background:
+    linear-gradient(115deg, rgba(11, 30, 77, 0.9) 0%, rgba(29, 78, 216, 0.55) 60%, rgba(56, 189, 248, 0.35) 100%),
+    url('/fotos/medicos-caminando.jpg') center/cover no-repeat;
+  animation: aparecerTarjeta 0.45s ease both;
+}
+
+.hero-resumen h2 {
+  color: var(--blanco);
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+}
+
+.hero-resumen p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  max-width: 640px;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.galeria figure {
+  position: relative;
+  margin: 0;
+  border-radius: var(--radio);
+  overflow: hidden;
+  box-shadow: var(--sombra-sm);
+  transition: transform var(--transicion), box-shadow var(--transicion);
+  animation: aparecerTarjeta 0.45s ease both;
+}
+
+.galeria figure:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra-lg);
+}
+
+.galeria img {
+  display: block;
+  width: 100%;
+  height: 168px;
+  object-fit: cover;
+}
+
+.galeria figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 22px 14px 10px;
+  color: var(--blanco);
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: linear-gradient(transparent, rgba(6, 15, 40, 0.82));
 }
 
 .tarjeta {
