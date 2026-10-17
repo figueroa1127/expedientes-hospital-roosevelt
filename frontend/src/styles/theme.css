@@ -283,6 +283,8 @@ button {
 .tarjeta-login {
   width: 100%;
   max-width: 390px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
   background: var(--blanco);
   border: 1px solid var(--linea);
   border-radius: 20px;
@@ -290,6 +292,44 @@ button {
   box-shadow: var(--sombra-lg);
   animation: aparecerTarjeta 0.5s ease both;
 }
+
+.rejilla-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 14px;
+}
+
+.cambiar-modo {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--linea);
+  font-size: 0.85rem;
+  color: var(--gris-texto);
+  text-align: center;
+}
+
+.enlace-cambiar {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--azul-clinico);
+  cursor: pointer;
+  transition: color var(--transicion);
+}
+
+.enlace-cambiar:hover {
+  color: var(--azul-clinico-oscuro);
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .rejilla-campos {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 .tarjeta-login h2 {
   font-size: 1.55rem;

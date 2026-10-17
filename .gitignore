@@ -9,4 +9,5 @@ dist/
 .en
 documentacion.html
 vite.log
+backend.log
 crear-paquete.ps1
