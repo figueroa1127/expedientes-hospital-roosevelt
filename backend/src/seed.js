@@ -286,6 +286,115 @@ const DEMO_PACIENTES = [
   },
 ];
 
+const NOMBRES = [
+  'María', 'José', 'Carlos', 'Ana', 'Luis', 'Sofía', 'Pedro', 'Lucía', 'Jorge', 'Andrea',
+  'Diego', 'Rosa', 'Manuel', 'Gabriela', 'Francisco', 'Elena', 'Roberto', 'Carmen', 'Miguel', 'Patricia',
+  'Héctor', 'Verónica', 'Óscar', 'Silvia', 'Ricardo', 'Claudia', 'Fernando', 'Diana', 'Álvaro', 'Karla',
+];
+const APELLIDOS = [
+  'López', 'García', 'Ramírez', 'Morales', 'Choc', 'Xiloj', 'Sac', 'Pérez', 'Hernández', 'Castillo',
+  'Gómez', 'Ruiz', 'De León', 'Ajpacajá', 'Tum', 'Coj', 'Batz', 'Cuc', 'Ixchop', 'Juárez',
+  'Vásquez', 'Méndez', 'Ordoñez', 'Espinoza', 'Monzón', 'Reyes', 'Aguilar', 'Cifuentes', 'Barrios', 'Sandoval',
+];
+const DIRECCIONES = [
+  'Zona 1, Guatemala', 'Zona 3, Guatemala', 'Zona 6, Guatemala', 'Zona 7, Guatemala', 'Zona 11, Guatemala',
+  'Zona 12, Guatemala', 'Zona 18, Guatemala', 'Mixco, Guatemala', 'Villa Nueva, Guatemala', 'Amatitlán, Guatemala',
+  'San Miguel Petapa, Guatemala', 'Chinautla, Guatemala', 'Quetzaltenango', 'Escuintla', 'Antigua Guatemala',
+];
+const TIPOS_SANGRE = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+const ANTECEDENTES_LISTA = [
+  'Ninguno.', 'Hipertensión arterial.', 'Diabetes mellitus tipo 2.', 'Asma bronquial.',
+  'Migraña crónica.', 'Dislipidemia.', 'Hipotiroidismo.', 'Ninguno.',
+];
+const ALERGIAS_LISTA = ['Ninguna', 'Penicilina', 'Sulfonamidas', 'AINEs', 'Mariscos', 'Ninguna'];
+const HISTORIAS = [
+  { motivo: 'Fiebre y tos', diagnostico: 'Infección respiratoria aguda' },
+  { motivo: 'Dolor abdominal', diagnostico: 'Gastritis leve' },
+  { motivo: 'Cefalea', diagnostico: 'Migraña' },
+  { motivo: 'Control de presión', diagnostico: 'Hipertensión arterial' },
+  { motivo: 'Control de glucosa', diagnostico: 'Diabetes mellitus tipo 2' },
+  { motivo: 'Tos persistente', diagnostico: 'Bronquitis aguda' },
+  { motivo: 'Dolor lumbar', diagnostico: 'Lumbalgia' },
+  { motivo: 'Lesión en la piel', diagnostico: 'Dermatitis alérgica' },
+];
+
+// Genera pacientes de ejemplo adicionales con datos variados y deterministas.
+function generarPacientesAdicionales(cantidad) {
+  const lista = [];
+  for (let i = 0; i < cantidad; i++) {
+    const num = String(i + 8).padStart(2, '0');
+    const nombre = `${NOMBRES[i % NOMBRES.length]} ${APELLIDOS[(i * 5) % APELLIDOS.length]} ${
+      APELLIDOS[(i * 11 + 4) % APELLIDOS.length]
+    }`;
+    const anio = 1948 + ((i * 7) % 66);
+    const mes = (i % 12) + 1;
+    const dia = (i % 27) + 1;
+
+    const consultas = [];
+    const nConsultas = i % 3;
+    for (let k = 0; k < nConsultas; k++) {
+      const h = HISTORIAS[(i + k) % HISTORIAS.length];
+      consultas.push({
+        motivo: h.motivo,
+        diagnostico: h.diagnostico,
+        notas: 'Evolución favorable, control en consulta externa.',
+        mesesAtras: (i + k) % 6,
+        receta:
+          k === 0
+            ? {
+                medicamento: ['Paracetamol 500mg', 'Ibuprofeno 400mg', 'Omeprazol 20mg'][i % 3],
+                dosis: '1 tableta cada 8h',
+                indicaciones: 'Solo si presenta molestias',
+              }
+            : undefined,
+      });
+    }
+
+    const dias = (i % 60) - 30;
+    const citas =
+      i % 2 === 0
+        ? [
+            {
+              motivo: 'Consulta de seguimiento',
+              estado: dias < 0 ? 'atendida' : 'programada',
+              dias,
+            },
+          ]
+        : undefined;
+
+    const ordenes =
+      i % 5 === 0
+        ? [
+            {
+              examen: ['Hemograma completo', 'Glucosa en ayunas', 'Perfil lipídico', 'Orina completa', 'Radiografía de tórax'][
+                i % 5
+              ],
+              indicaciones: 'En ayunas',
+              estado: ['solicitada', 'en_proceso', 'completada'][i % 3],
+              resultado: i % 3 === 2 ? 'Resultado dentro del rango esperado.' : undefined,
+            },
+          ]
+        : undefined;
+
+    lista.push({
+      nombre,
+      correo: `paciente${num}@hospitalroosevelt.gt`,
+      password: 'Paciente123!',
+      dpi: `2${String(100000000000 + i).slice(0, 12)}`,
+      fecha_nacimiento: `${anio}-${pad(mes)}-${pad(dia)}`,
+      telefono: `5555-${String(1000 + i).slice(0, 4)}`,
+      direccion: DIRECCIONES[i % DIRECCIONES.length],
+      tipo_sangre: TIPOS_SANGRE[i % TIPOS_SANGRE.length],
+      antecedentes: ANTECEDENTES_LISTA[i % ANTECEDENTES_LISTA.length],
+      alergias: ALERGIAS_LISTA[i % ALERGIAS_LISTA.length],
+      consultas,
+      citas,
+      ordenes,
+    });
+  }
+  return lista;
+}
+
 async function main() {
   await initDb();
   console.log('Sembrando datos de demostración...\n');
@@ -330,11 +439,12 @@ async function main() {
     medicoId = medico.rows[0].id;
   }
 
-  for (const paciente of DEMO_PACIENTES) {
+  const TODOS_LOS_PACIENTES = [...DEMO_PACIENTES, ...generarPacientesAdicionales(43)];
+  for (const paciente of TODOS_LOS_PACIENTES) {
     await crearPacienteDemo(paciente, medicoId, admisionId);
   }
 
-  console.log(`Pacientes de ejemplo creados: ${DEMO_PACIENTES.length}`);
+  console.log(`Pacientes de ejemplo creados: ${TODOS_LOS_PACIENTES.length}`);
   console.log('\nUsuarios de prueba:');
   console.table([
     { rol: 'administrador', correo: 'admin@hospitalroosevelt.gt', password: 'Admin123!' },
