@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" fill="none" role="img" aria-label="Ilustración de panel de indicadores">
+  <defs>
+    <linearGradient id="p-tarjeta" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="p-barra" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="34" y="26" width="252" height="150" rx="18" fill="url(#p-tarjeta)" opacity="0.96"/>
+  <rect x="34" y="26" width="252" height="150" rx="18" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="2"/>
+
+  <circle cx="60" cy="52" r="10" fill="#38bdf8"/>
+  <rect x="78" y="46" width="70" height="8" rx="4" fill="#1e40af" opacity="0.6"/>
+  <rect x="78" y="58" width="44" height="6" rx="3" fill="#1e40af" opacity="0.3"/>
+
+  <g transform="translate(58 128)">
+    <rect x="0" y="-30" width="16" height="30" rx="4" fill="url(#p-barra)"/>
+    <rect x="24" y="-52" width="16" height="52" rx="4" fill="url(#p-barra)"/>
+    <rect x="48" y="-40" width="16" height="40" rx="4" fill="url(#p-barra)"/>
+    <rect x="72" y="-64" width="16" height="64" rx="4" fill="url(#p-barra)"/>
+    <rect x="96" y="-46" width="16" height="46" rx="4" fill="url(#p-barra)"/>
+  </g>
+
+  <g transform="translate(238 96)">
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#dbeafe" stroke-width="10"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#38bdf8" stroke-width="10"
+      stroke-dasharray="110 163" stroke-linecap="round" transform="rotate(-90)"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#2563eb" stroke-width="10"
+      stroke-dasharray="40 163" stroke-linecap="round" transform="rotate(150)"/>
+  </g>
+</svg>

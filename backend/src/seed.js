@@ -1,5 +1,7 @@
 // Crea usuarios y datos de demostración para poder iniciar sesión de inmediato
-// con cada uno de los 5 roles definidos en la arquitectura del sistema.
+// con cada uno de los 5 roles definidos en la arquitectura del sistema,
+// además de una lista de pacientes de ejemplo con expediente, consultas,
+// citas y órdenes de laboratorio para poblar el panel de control.
 const bcrypt = require('bcryptjs');
 const { pool, initDb } = require('./db');
 
@@ -13,6 +15,276 @@ async function upsertUsuario({ nombre, correo, password, rol }) {
   );
   return info.rows[0].id;
 }
+
+function pad(n) {
+  return String(n).padStart(2, '0');
+}
+
+// Fecha con formato 'YYYY-MM-DD HH24:MI:SS' desplazada N meses hacia atrás.
+function haceMeses(n, dia = 15) {
+  const hoy = new Date();
+  const d = new Date(hoy.getFullYear(), hoy.getMonth() - n, dia, 10, 30, 0);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+}
+
+// Fecha relativa a hoy en días (negativo = pasado, positivo = futuro), en ISO.
+function enDias(n) {
+  return new Date(Date.now() + n * 24 * 60 * 60 * 1000).toISOString();
+}
+
+async function crearPacienteDemo(datos, medicoId, admisionId) {
+  const usuarioId = await upsertUsuario({
+    nombre: datos.nombre,
+    correo: datos.correo,
+    password: datos.password,
+    rol: 'paciente',
+  });
+
+  let paciente = await pool.query('SELECT id FROM pacientes WHERE usuario_id = $1', [usuarioId]);
+  let pacienteId;
+  if (paciente.rows[0]) {
+    pacienteId = paciente.rows[0].id;
+  } else {
+    const info = await pool.query(
+      'INSERT INTO pacientes (usuario_id, dpi, fecha_nacimiento, telefono, direccion, tipo_sangre) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [usuarioId, datos.dpi, datos.fecha_nacimiento, datos.telefono, datos.direccion, datos.tipo_sangre]
+    );
+    pacienteId = info.rows[0].id;
+  }
+
+  let expediente = await pool.query('SELECT id FROM expedientes WHERE paciente_id = $1', [pacienteId]);
+  let expedienteId;
+  if (expediente.rows[0]) {
+    expedienteId = expediente.rows[0].id;
+  } else {
+    const info = await pool.query(
+      'INSERT INTO expedientes (paciente_id, antecedentes, alergias) VALUES ($1, $2, $3) RETURNING id',
+      [pacienteId, datos.antecedentes, datos.alergias]
+    );
+    expedienteId = info.rows[0].id;
+  }
+
+  // Consultas (con su receta) repartidas en los últimos meses.
+  const hayConsulta = await pool.query('SELECT id FROM consultas WHERE expediente_id = $1', [expedienteId]);
+  if (!hayConsulta.rows[0] && datos.consultas) {
+    for (const c of datos.consultas) {
+      const info = await pool.query(
+        'INSERT INTO consultas (expediente_id, medico_id, fecha, motivo, diagnostico, notas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [expedienteId, medicoId, haceMeses(c.mesesAtras ?? 0), c.motivo, c.diagnostico, c.notas || null]
+      );
+      if (c.receta) {
+        await pool.query(
+          'INSERT INTO recetas (consulta_id, medicamento, dosis, indicaciones) VALUES ($1, $2, $3, $4)',
+          [info.rows[0].id, c.receta.medicamento, c.receta.dosis, c.receta.indicaciones]
+        );
+      }
+    }
+  }
+
+  // Citas.
+  const hayCita = await pool.query('SELECT id FROM citas WHERE paciente_id = $1', [pacienteId]);
+  if (!hayCita.rows[0] && datos.citas) {
+    for (const cita of datos.citas) {
+      await pool.query(
+        'INSERT INTO citas (paciente_id, medico_id, fecha, motivo, estado, creado_por) VALUES ($1, $2, $3, $4, $5, $6)',
+        [pacienteId, medicoId, enDias(cita.dias), cita.motivo, cita.estado, admisionId]
+      );
+    }
+  }
+
+  // Órdenes de laboratorio.
+  const hayOrden = await pool.query('SELECT id FROM ordenes_laboratorio WHERE expediente_id = $1', [expedienteId]);
+  if (!hayOrden.rows[0] && datos.ordenes) {
+    for (const o of datos.ordenes) {
+      await pool.query(
+        'INSERT INTO ordenes_laboratorio (expediente_id, medico_id, examen, indicaciones, estado, resultado) VALUES ($1, $2, $3, $4, $5, $6)',
+        [expedienteId, medicoId, o.examen, o.indicaciones || null, o.estado || 'solicitada', o.resultado || null]
+      );
+    }
+  }
+
+  return pacienteId;
+}
+
+const DEMO_PACIENTES = [
+  {
+    nombre: 'José Pérez',
+    correo: 'paciente@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '1234567890101',
+    fecha_nacimiento: '1990-05-14',
+    telefono: '5555-1234',
+    direccion: 'Zona 1, Guatemala',
+    tipo_sangre: 'O+',
+    antecedentes: 'Hipertensión controlada.',
+    alergias: 'Penicilina',
+    consultas: [
+      {
+        motivo: 'Dolor abdominal',
+        diagnostico: 'Gastritis leve',
+        notas: 'Se recomienda dieta blanda y control en 15 días.',
+        mesesAtras: 1,
+        receta: {
+          medicamento: 'Omeprazol 20mg',
+          dosis: '1 cápsula cada 24h',
+          indicaciones: 'Tomar en ayunas por 14 días',
+        },
+      },
+    ],
+    citas: [{ motivo: 'Control de gastritis', estado: 'programada', dias: 7 }],
+    ordenes: [
+      {
+        examen: 'Hemograma completo',
+        indicaciones: 'En ayunas',
+        estado: 'completada',
+        resultado: 'Valores dentro del rango normal.',
+      },
+    ],
+  },
+  {
+    nombre: 'María López',
+    correo: 'maria.lopez@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '2345678900102',
+    fecha_nacimiento: '1985-03-22',
+    telefono: '5555-2201',
+    direccion: 'Zona 5, Guatemala',
+    tipo_sangre: 'O-',
+    antecedentes: 'Diabetes mellitus tipo 2.',
+    alergias: 'Sulfonamidas',
+    consultas: [
+      {
+        motivo: 'Control de glucosa',
+        diagnostico: 'Diabetes mellitus tipo 2',
+        notas: 'Se ajusta tratamiento y se solicita control mensual.',
+        mesesAtras: 2,
+        receta: {
+          medicamento: 'Metformina 850mg',
+          dosis: '1 tableta cada 12h',
+          indicaciones: 'Tomar con las comidas',
+        },
+      },
+    ],
+    citas: [{ motivo: 'Control de diabetes', estado: 'atendida', dias: -20 }],
+    ordenes: [
+      {
+        examen: 'Glucosa en ayunas',
+        indicaciones: 'Ayuno de 8 horas',
+        estado: 'completada',
+        resultado: '142 mg/dL (ligeramente elevada).',
+      },
+    ],
+  },
+  {
+    nombre: 'Pedro Ramírez',
+    correo: 'pedro.ramirez@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '3456789000103',
+    fecha_nacimiento: '1978-11-09',
+    telefono: '5555-3312',
+    direccion: 'Mixco, Guatemala',
+    tipo_sangre: 'A+',
+    antecedentes: 'Asma bronquial.',
+    alergias: 'Ninguna',
+    consultas: [
+      {
+        motivo: 'Dificultad para respirar',
+        diagnostico: 'Asma bronquial',
+        notas: 'Uso de inhalador de rescate según necesidad.',
+        mesesAtras: 3,
+      },
+    ],
+    citas: [{ motivo: 'Control de asma', estado: 'programada', dias: 12 }],
+    ordenes: [{ examen: 'Radiografía de tórax', indicaciones: 'Traer placa anterior', estado: 'en_proceso' }],
+  },
+  {
+    nombre: 'Ana Lucía Sac',
+    correo: 'ana.sac@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '4567890100104',
+    fecha_nacimiento: '2001-07-30',
+    telefono: '5555-4488',
+    direccion: 'Villa Nueva, Guatemala',
+    tipo_sangre: 'B+',
+    antecedentes: 'Ninguno.',
+    alergias: 'Penicilina',
+    consultas: [{ motivo: 'Cefalea', diagnostico: 'Migraña', notas: 'Se sugiere hidratación y descanso.', mesesAtras: 0 }],
+    citas: [{ motivo: 'Consulta general', estado: 'programada', dias: 3 }],
+  },
+  {
+    nombre: 'Luis Choc',
+    correo: 'luis.choc@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '5678901000105',
+    fecha_nacimiento: '1965-01-15',
+    telefono: '5555-7788',
+    direccion: 'Zona 7, Guatemala',
+    tipo_sangre: 'AB+',
+    antecedentes: 'Hipertensión arterial.',
+    alergias: 'Ninguna',
+    consultas: [
+      {
+        motivo: 'Presión arterial elevada',
+        diagnostico: 'Hipertensión arterial',
+        notas: 'Control diario de presión en casa.',
+        mesesAtras: 4,
+        receta: {
+          medicamento: 'Losartán 50mg',
+          dosis: '1 tableta cada 24h',
+          indicaciones: 'Tomar a la misma hora todos los días',
+        },
+      },
+    ],
+    citas: [{ motivo: 'Control de presión', estado: 'atendida', dias: -45 }],
+    ordenes: [
+      {
+        examen: 'Perfil lipídico',
+        indicaciones: 'Ayuno de 12 horas',
+        estado: 'completada',
+        resultado: 'Colesterol total 220 mg/dL (elevado).',
+      },
+    ],
+  },
+  {
+    nombre: 'Sofía Morales',
+    correo: 'sofia.morales@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '6789010000106',
+    fecha_nacimiento: '1996-09-02',
+    telefono: '5555-9090',
+    direccion: 'Zona 11, Guatemala',
+    tipo_sangre: 'A-',
+    antecedentes: 'Migraña crónica.',
+    alergias: 'Ninguna',
+    consultas: [
+      { motivo: 'Migraña', diagnostico: 'Migraña', notas: 'Episodios recurrentes.', mesesAtras: 1 },
+      { motivo: 'Migraña recurrente', diagnostico: 'Migraña', notas: 'Se deriva a neurología.', mesesAtras: 5 },
+    ],
+    citas: [{ motivo: 'Consulta de neurología', estado: 'programada', dias: 20 }],
+  },
+  {
+    nombre: 'Diego Xiloj',
+    correo: 'diego.xiloj@hospitalroosevelt.gt',
+    password: 'Paciente123!',
+    dpi: '7890100000107',
+    fecha_nacimiento: '2010-04-18',
+    telefono: '5555-6060',
+    direccion: 'Amatitlán, Guatemala',
+    tipo_sangre: 'O+',
+    antecedentes: 'Ninguno.',
+    alergias: 'Ninguna',
+    consultas: [
+      {
+        motivo: 'Fiebre',
+        diagnostico: 'Infección respiratoria aguda',
+        notas: 'Reposo e hidratación.',
+        mesesAtras: 2,
+        receta: { medicamento: 'Acetaminofén jarabe', dosis: 'Según peso cada 6h', indicaciones: 'Solo si hay fiebre' },
+      },
+    ],
+    citas: [{ motivo: 'Control pediátrico', estado: 'atendida', dias: -10 }],
+  },
+];
 
 async function main() {
   await initDb();
@@ -32,7 +304,7 @@ async function main() {
     rol: 'admision',
   });
 
-  const enfermeriaId = await upsertUsuario({
+  await upsertUsuario({
     nombre: 'Lucía Enfermera',
     correo: 'enfermeria@hospitalroosevelt.gt',
     password: 'Enfermeria123!',
@@ -58,61 +330,12 @@ async function main() {
     medicoId = medico.rows[0].id;
   }
 
-  const pacienteUsuarioId = await upsertUsuario({
-    nombre: 'José Pérez',
-    correo: 'paciente@hospitalroosevelt.gt',
-    password: 'Paciente123!',
-    rol: 'paciente',
-  });
-
-  let paciente = await pool.query('SELECT id FROM pacientes WHERE usuario_id = $1', [pacienteUsuarioId]);
-  let pacienteId;
-  if (!paciente.rows[0]) {
-    const info = await pool.query(
-      'INSERT INTO pacientes (usuario_id, dpi, fecha_nacimiento, telefono, direccion, tipo_sangre) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-      [pacienteUsuarioId, '1234567890101', '1990-05-14', '5555-1234', 'Zona 1, Guatemala', 'O+']
-    );
-    pacienteId = info.rows[0].id;
-  } else {
-    pacienteId = paciente.rows[0].id;
+  for (const paciente of DEMO_PACIENTES) {
+    await crearPacienteDemo(paciente, medicoId, admisionId);
   }
 
-  let expediente = await pool.query('SELECT id FROM expedientes WHERE paciente_id = $1', [pacienteId]);
-  let expedienteId;
-  if (!expediente.rows[0]) {
-    const info = await pool.query(
-      'INSERT INTO expedientes (paciente_id, antecedentes, alergias) VALUES ($1, $2, $3) RETURNING id',
-      [pacienteId, 'Hipertensión controlada.', 'Penicilina']
-    );
-    expedienteId = info.rows[0].id;
-  } else {
-    expedienteId = expediente.rows[0].id;
-  }
-
-  const consultaExistente = await pool.query('SELECT id FROM consultas WHERE expediente_id = $1', [expedienteId]);
-  if (!consultaExistente.rows[0]) {
-    const info = await pool.query(
-      'INSERT INTO consultas (expediente_id, medico_id, motivo, diagnostico, notas) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [expedienteId, medicoId, 'Dolor abdominal', 'Gastritis leve', 'Se recomienda dieta blanda y control en 15 días.']
-    );
-    const consultaId = info.rows[0].id;
-
-    await pool.query(
-      'INSERT INTO recetas (consulta_id, medicamento, dosis, indicaciones) VALUES ($1, $2, $3, $4)',
-      [consultaId, 'Omeprazol 20mg', '1 cápsula cada 24h', 'Tomar en ayunas por 14 días']
-    );
-  }
-
-  const citaExistente = await pool.query('SELECT id FROM citas WHERE paciente_id = $1', [pacienteId]);
-  if (!citaExistente.rows[0]) {
-    const enUnaSemana = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    await pool.query(
-      'INSERT INTO citas (paciente_id, medico_id, fecha, motivo, estado, creado_por) VALUES ($1, $2, $3, $4, $5, $6)',
-      [pacienteId, medicoId, enUnaSemana, 'Control de gastritis', 'programada', admisionId]
-    );
-  }
-
-  console.log('Usuarios de prueba creados:');
+  console.log(`Pacientes de ejemplo creados: ${DEMO_PACIENTES.length}`);
+  console.log('\nUsuarios de prueba:');
   console.table([
     { rol: 'administrador', correo: 'admin@hospitalroosevelt.gt', password: 'Admin123!' },
     { rol: 'admision', correo: 'admision@hospitalroosevelt.gt', password: 'Admision123!' },

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 470" fill="none" role="img" aria-label="Ilustración de expediente médico digital">
+  <defs>
+    <linearGradient id="tarjeta" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="acento" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="corazon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="300" cy="220" r="188" fill="#38bdf8" opacity="0.14"/>
+  <circle cx="300" cy="220" r="138" fill="#7dd3fc" opacity="0.12"/>
+
+  <g transform="rotate(-5 300 235)">
+    <rect x="150" y="92" width="300" height="298" rx="26" fill="url(#tarjeta)"/>
+    <rect x="150" y="92" width="300" height="298" rx="26" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2"/>
+    <circle cx="192" cy="142" r="20" fill="url(#acento)"/>
+    <rect x="224" y="128" width="126" height="12" rx="6" fill="#1e40af" opacity="0.75"/>
+    <rect x="224" y="148" width="84" height="10" rx="5" fill="#1e40af" opacity="0.35"/>
+    <path d="M176 236 H226 l14 -34 20 68 16 -34 h64" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="176" y="292" width="244" height="12" rx="6" fill="#1e40af" opacity="0.18"/>
+    <rect x="176" y="316" width="182" height="12" rx="6" fill="#1e40af" opacity="0.18"/>
+    <rect x="176" y="340" width="212" height="12" rx="6" fill="#1e40af" opacity="0.18"/>
+  </g>
+
+  <g transform="translate(462 118)">
+    <circle cx="0" cy="0" r="42" fill="url(#corazon)"/>
+    <path d="M0 16c-14-9-24-18-24-29a13 13 0 0 1 24-7 13 13 0 0 1 24 7c0 11-10 20-24 29z" fill="#ffffff"/>
+  </g>
+
+  <g stroke="#7dd3fc" stroke-width="8" fill="none" stroke-linecap="round">
+    <path d="M118 152c-4 36 10 62 36 72"/>
+    <path d="M102 152v-24M134 152v-24"/>
+  </g>
+  <circle cx="164" cy="236" r="16" fill="none" stroke="#7dd3fc" stroke-width="8"/>
+
+  <g fill="#ffffff" opacity="0.85">
+    <rect x="68" y="300" width="30" height="10" rx="4"/>
+    <rect x="78" y="290" width="10" height="30" rx="4"/>
+  </g>
+  <g fill="#38bdf8" opacity="0.9">
+    <rect x="470" y="336" width="26" height="9" rx="4"/>
+    <rect x="478.5" y="327.5" width="9" height="26" rx="4"/>
+  </g>
+
+  <g transform="rotate(-25 137 363)">
+    <rect x="120" y="356" width="34" height="14" rx="7" fill="#ffffff" opacity="0.9"/>
+    <rect x="120" y="356" width="17" height="14" rx="7" fill="#38bdf8"/>
+  </g>
+</svg>

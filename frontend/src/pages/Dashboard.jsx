@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import { GraficaBarras, GraficaDona, ListaRanking } from '../components/Graficas';
+import ilustracion from '../assets/ilustracion-panel.svg';
 
 const ETIQUETA_ESTADO = {
   programada: 'Programadas',
@@ -42,6 +43,17 @@ export default function Dashboard() {
       <div className="encabezado-pagina">
         <h1>Panel de control</h1>
         <p>Indicadores generales del hospital, {usuario.nombre.split(' ')[0]}.</p>
+      </div>
+
+      <div className="banner-panel">
+        <div className="texto">
+          <h2>Resumen en tiempo real</h2>
+          <p>
+            Vigila la actividad clínica del hospital: pacientes, consultas, citas y órdenes de
+            laboratorio, todo actualizado desde la base de datos.
+          </p>
+        </div>
+        <img src={ilustracion} alt="" aria-hidden="true" />
       </div>
 
       <div className="rejilla">
