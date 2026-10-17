@@ -440,3 +440,195 @@ td {
   text-align: center;
   color: var(--gris-texto);
 }
+
+/* --- Panel de control y gráficas ---------------------------------- */
+.rejilla-doble {
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+.metrica-destacada {
+  border-top: 3px solid var(--azul-clinico);
+}
+
+.grafica-barras {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  height: 180px;
+  margin-top: 10px;
+}
+
+.grafica-barras .columna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.grafica-barras .valor-col {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--azul-clinico-oscuro);
+  margin-bottom: 4px;
+}
+
+.grafica-barras .pista {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.grafica-barras .barra {
+  width: 64%;
+  background: linear-gradient(180deg, var(--azul-clinico) 0%, var(--azul-clinico-oscuro) 100%);
+  border-radius: 6px 6px 0 0;
+  min-height: 3px;
+}
+
+.grafica-barras .etiqueta-col {
+  font-size: 0.72rem;
+  color: var(--gris-texto);
+  margin-top: 6px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.grafica-dona {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 10px;
+}
+
+.dona-svg {
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.dona-leyenda .fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+  color: var(--grafito);
+}
+
+.dona-leyenda .nombre {
+  min-width: 92px;
+}
+
+.punto {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.lista-ranking {
+  margin-top: 12px;
+}
+
+.fila-ranking {
+  margin-bottom: 12px;
+}
+
+.fila-ranking .texto-ranking {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.fila-ranking .nombre {
+  color: var(--grafito);
+}
+
+.fila-ranking strong {
+  color: var(--azul-clinico-oscuro);
+}
+
+.pista-ranking {
+  height: 8px;
+  background: var(--hueso);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.relleno-ranking {
+  height: 100%;
+  border-radius: 100px;
+}
+
+/* --- Órdenes de laboratorio --------------------------------------- */
+.alerta-alergia {
+  background: var(--coral-suave);
+  border: 1px solid rgba(193, 91, 74, 0.35);
+  border-left: 4px solid var(--coral);
+  color: var(--coral);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+
+.chip-pendientes {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--ambar-suave);
+  color: var(--ambar);
+  vertical-align: middle;
+}
+
+.orden-item {
+  border-top: 1px solid var(--linea);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+
+.orden-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.insignia-orden {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.insignia-orden.solicitada {
+  background: var(--azul-clinico-claro);
+  color: var(--azul-clinico-oscuro);
+}
+
+.insignia-orden.en_proceso {
+  background: var(--ambar-suave);
+  color: var(--ambar);
+}
+
+.insignia-orden.completada {
+  background: var(--verde-suave);
+  color: var(--verde-ok);
+}
+
+.resultado-caja {
+  background: var(--verde-suave);
+  border-left: 3px solid var(--verde-ok);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--grafito);
+}

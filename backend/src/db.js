@@ -103,6 +103,18 @@ CREATE TABLE IF NOT EXISTS citas (
   creado_por INTEGER REFERENCES usuarios(id)
 );
 
+CREATE TABLE IF NOT EXISTS ordenes_laboratorio (
+  id SERIAL PRIMARY KEY,
+  expediente_id INTEGER NOT NULL REFERENCES expedientes(id) ON DELETE CASCADE,
+  medico_id INTEGER NOT NULL REFERENCES medicos(id),
+  examen TEXT NOT NULL,
+  indicaciones TEXT,
+  estado TEXT NOT NULL DEFAULT 'solicitada' CHECK (estado IN ('solicitada','en_proceso','completada')),
+  resultado TEXT,
+  fecha_solicitud TEXT NOT NULL DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS'),
+  fecha_resultado TEXT
+);
+
 CREATE TABLE IF NOT EXISTS auditoria (
   id SERIAL PRIMARY KEY,
   usuario_id INTEGER REFERENCES usuarios(id),

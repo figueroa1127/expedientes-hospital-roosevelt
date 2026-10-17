@@ -5,10 +5,12 @@ import Layout from './components/Layout';
 
 import Login from './pages/Login';
 import Resumen from './pages/Resumen';
+import Dashboard from './pages/Dashboard';
 import Pacientes from './pages/Pacientes';
 import ExpedienteDetalle from './pages/ExpedienteDetalle';
 import MiExpediente from './pages/MiExpediente';
 import Citas from './pages/Citas';
+import Laboratorio from './pages/Laboratorio';
 import Usuarios from './pages/Usuarios';
 
 export default function App() {
@@ -26,6 +28,22 @@ export default function App() {
             }
           >
             <Route path="/" element={<Resumen />} />
+            <Route
+              path="/dashboard"
+              element={
+                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'admision', 'administrador']}>
+                  <Dashboard />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="/laboratorio"
+              element={
+                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'administrador']}>
+                  <Laboratorio />
+                </RutaProtegida>
+              }
+            />
             <Route
               path="/pacientes"
               element={

@@ -32,6 +32,16 @@ export default function ExpedienteDetalle() {
     await cargar();
   }
 
+  async function manejarSolicitarOrden(datos) {
+    await api.crearOrdenLaboratorio(token, expediente.id, datos);
+    await cargar();
+  }
+
+  async function manejarResultadoOrden(ordenId, datos) {
+    await api.actualizarOrdenLaboratorio(token, ordenId, datos);
+    await cargar();
+  }
+
   return (
     <div>
       <div className="encabezado-pagina">
@@ -48,8 +58,12 @@ export default function ExpedienteDetalle() {
           expediente={expediente}
           puedeRegistrarConsulta={usuario.rol === 'medico'}
           puedeEditarAntecedentes={['medico', 'enfermeria', 'administrador'].includes(usuario.rol)}
+          puedeSolicitarOrden={usuario.rol === 'medico'}
+          puedeRegistrarResultado={['medico', 'enfermeria', 'administrador'].includes(usuario.rol)}
           onAgregarConsulta={manejarNuevaConsulta}
           onActualizarAntecedentes={manejarActualizarAntecedentes}
+          onSolicitarOrden={manejarSolicitarOrden}
+          onRegistrarResultado={manejarResultadoOrden}
         />
       )}
     </div>

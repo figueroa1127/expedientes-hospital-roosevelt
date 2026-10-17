@@ -7,6 +7,8 @@ const usuariosRoutes = require('./routes/usuarios');
 const pacientesRoutes = require('./routes/pacientes');
 const expedientesRoutes = require('./routes/expedientes');
 const citasRoutes = require('./routes/citas');
+const reportesRoutes = require('./routes/reportes');
+const laboratorioRoutes = require('./routes/laboratorio');
 const { initDb } = require('./db');
 
 if (!process.env.JWT_SECRET) {
@@ -29,6 +31,8 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/expedientes', expedientesRoutes);
 app.use('/api/citas', citasRoutes);
+app.use('/api/reportes', reportesRoutes);
+app.use('/api/laboratorio', laboratorioRoutes);
 
 // Manejo de errores no controlados
 app.use((err, req, res, next) => {

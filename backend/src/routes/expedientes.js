@@ -35,7 +35,17 @@ async function cargarExpedienteCompleto(expedienteId) {
     consultas.push({ ...c, recetas: recs.rows });
   }
 
-  return { ...expediente, consultas };
+  const os = await pool.query(
+    `SELECT o.*, u.nombre AS medico_nombre, m.especialidad
+     FROM ordenes_laboratorio o
+     JOIN medicos m ON m.id = o.medico_id
+     JOIN usuarios u ON u.id = m.usuario_id
+     WHERE o.expediente_id = $1
+     ORDER BY o.fecha_solicitud DESC`,
+    [expedienteId]
+  );
+
+  return { ...expediente, consultas, ordenes: os.rows };
 }
 
 // GET /api/expedientes/mio -> el propio paciente ve su expediente
@@ -119,6 +129,30 @@ router.post('/:expedienteId/consultas', requireRole('medico'), asyncHandler(asyn
   } finally {
     client.release();
   }
+}));
+
+// POST /api/expedientes/:expedienteId/ordenes -> el médico solicita un examen de laboratorio
+router.post('/:expedienteId/ordenes', requireRole('medico'), asyncHandler(async (req, res) => {
+  const { examen, indicaciones } = req.body;
+  if (!examen || !examen.trim()) {
+    return res.status(400).json({ error: 'El nombre del examen es obligatorio.' });
+  }
+
+  const medico = await pool.query('SELECT id FROM medicos WHERE usuario_id = $1', [req.usuario.id]);
+  if (!medico.rows[0]) return res.status(404).json({ error: 'No se encontró tu ficha médica.' });
+
+  const info = await pool.query(
+    'INSERT INTO ordenes_laboratorio (expediente_id, medico_id, examen, indicaciones) VALUES ($1, $2, $3, $4) RETURNING id',
+    [req.params.expedienteId, medico.rows[0].id, examen.trim(), indicaciones || null]
+  );
+
+  await registrarAuditoria(
+    req.usuario.id,
+    'crear_orden_laboratorio',
+    `Orden ${info.rows[0].id} en expediente ${req.params.expedienteId}`
+  );
+
+  res.status(201).json({ id: info.rows[0].id, mensaje: 'Orden de laboratorio creada.' });
 }));
 
 // PUT /api/expedientes/:expedienteId -> actualizar antecedentes / alergias

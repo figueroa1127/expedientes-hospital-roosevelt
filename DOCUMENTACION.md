@@ -50,6 +50,7 @@ al arrancar el servidor y por `npm run seed`.
 | `expedientes` | 1—1 con `pacientes` | Antecedentes y alergias (fechas de creación/actualización) |
 | `consultas` | N por `expedientes` | Motivo, diagnóstico, notas; fecha automática |
 | `recetas` | N por `consultas` | Medicamento, dosis, indicaciones |
+| `ordenes_laboratorio` | N por `expedientes` | Exámenes solicitados, estado y resultado |
 | `citas` | N por `pacientes` y `medicos` | Fecha, motivo, estado y quién la creó |
 | `auditoria` | N por `usuarios` | Traza de cada acción relevante (login, creación, consulta, etc.) |
 
@@ -66,6 +67,8 @@ al arrancar el servidor y por `npm run seed`.
 **consultas** · `id`, `expediente_id` (FK), `medico_id` (FK), `fecha`, `motivo`, `diagnostico`, `notas`
 
 **recetas** · `id`, `consulta_id` (FK), `medicamento`, `dosis`, `indicaciones`
+
+**ordenes_laboratorio** · `id`, `expediente_id` (FK), `medico_id` (FK), `examen`, `indicaciones`, `estado` ∈ (`solicitada`,`en_proceso`,`completada`), `resultado`, `fecha_solicitud`, `fecha_resultado`
 
 **citas** · `id`, `paciente_id` (FK), `medico_id` (FK), `fecha`, `motivo`, `estado` ∈ (`programada`,`atendida`,`cancelada`), `creado_por`
 
@@ -104,6 +107,9 @@ registro de una consulta con sus recetas en `routes/expedientes.js`.
 | Agendar citas | ✅ (las suyas) | — | — | ✅ | ✅ |
 | Cambiar estado de citas | — | ✅ | ✅ | ✅ | ✅ |
 | Ver agenda completa de citas | — | — | ✅ | ✅ | ✅ |
+| Ver panel de control (indicadores y gráficas) | — | ✅ | ✅ | ✅ | ✅ |
+| Solicitar examen de laboratorio | — | ✅ | — | — | — |
+| Ver bandeja de laboratorio y registrar resultados | — | ✅ | ✅ | — | ✅ |
 | Crear usuarios | — | — | — | — | ✅ |
 
 ---
@@ -253,6 +259,56 @@ Todas las respuestas son JSON. Las rutas con 🔒 requieren `Authorization: Bear
 // Error 400: estado inválido
 ```
 
+### 4.7 Órdenes de laboratorio
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| POST | `/api/expedientes/:expedienteId/ordenes` | 🔒 medico | El médico solicita un examen |
+| GET | `/api/laboratorio` | 🔒 medico, enfermeria, administrador | Bandeja con todas las órdenes |
+| PUT | `/api/laboratorio/:id` | 🔒 medico, enfermeria, administrador | Registra el resultado y/o cambia el estado |
+
+**POST `/api/expedientes/:expedienteId/ordenes`**
+```json
+// Petición
+{ "examen": "Hemograma completo", "indicaciones": "Ayuno de 8 horas" }
+
+// Respuesta 201
+{ "id": 1, "mensaje": "Orden de laboratorio creada." }
+// Errores: 400 sin examen · 403 si el rol no es médico · 404 sin ficha médica
+```
+
+**PUT `/api/laboratorio/:id`**
+```json
+// Petición (si se envía resultado, la orden pasa a "completada" automáticamente)
+{ "resultado": "Hb 14.2 g/dL, Leucocitos 6800, Plaquetas 245000" }
+
+// Respuesta 200
+{ "mensaje": "Orden de laboratorio actualizada.", "estado": "completada" }
+// Errores: 400 estado inválido · 404 orden no encontrada
+```
+
+Las órdenes también viajan dentro de la respuesta del expediente, en el arreglo
+`ordenes` (junto con `consultas`).
+
+### 4.8 Reportes (panel de control)
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/reportes/resumen` | 🔒 medico, enfermeria, admision, administrador | Indicadores y estadísticas del panel |
+
+**Respuesta 200 (resumen)**
+```json
+{
+  "totales": { "pacientes": 12, "consultas": 30, "citas": 18,
+                "citasProgramadas": 7, "ordenesPendientes": 4 },
+  "citasPorEstado": [ { "etiqueta": "programada", "valor": 7 }, "…" ],
+  "consultasPorMes": [ { "etiqueta": "may 26", "valor": 3 }, "…" ],
+  "diagnosticosFrecuentes": [ { "etiqueta": "Gastritis leve", "valor": 4 }, "…" ],
+  "tiposSangre": [ { "etiqueta": "O+", "valor": 6 }, "…" ],
+  "gruposEdad": [ { "etiqueta": "Adultez joven (30-44)", "valor": 5 }, "…" ]
+}
+```
+
 ---
 
 ## 5. Estructura del código
@@ -268,7 +324,8 @@ expedientes-hospital-roosevelt/
 │       ├── seed.js              Datos de prueba (5 roles), idempotente
 │       ├── asyncHandler.js      Captura errores de controladores async
 │       ├── middleware/auth.js   requireAuth (JWT) y requireRole (RBAC)
-│       └── routes/              auth, usuarios, pacientes, expedientes, citas
+│       └── routes/              auth, usuarios, pacientes, expedientes,
+│                                citas, laboratorio, reportes
 └── frontend/                    Interfaz React
     ├── vercel.json              Rewrites /api → API de Render
     ├── vite.config.js           Puerto 5173, host, allowedHosts, proxy → 4000
@@ -276,9 +333,10 @@ expedientes-hospital-roosevelt/
         ├── api.js               Cliente REST (fetch + token)
         ├── App.jsx              Rutas y protecciones por rol
         ├── context/AuthContext  Sesión: token, usuario, login/logout
-        ├── components/          Layout, RutaProtegida, VistaExpediente
-        ├── pages/               Login, Resumen, Pacientes, ExpedienteDetalle,
-        │                        MiExpediente, Citas, Usuarios
+        ├── components/          Layout, RutaProtegida, VistaExpediente, Graficas
+        ├── pages/               Login, Resumen, Dashboard, Pacientes,
+        │                        ExpedienteDetalle, MiExpediente, Citas,
+        │                        Laboratorio, Usuarios
         └── styles/theme.css     Sistema de diseño (colores clínicos)
 ```
 
@@ -329,4 +387,7 @@ nube (Neon + Render + Vercel):
 3. `GET /api/salud` → `estado: ok`.
 4. `POST /api/auth/login` con los 5 roles → token emitido correctamente.
 5. `GET /api/pacientes`, `GET /api/expedientes/paciente/:id`, `GET /api/citas` → datos coherentes (expediente con consultas y recetas).
-6. Despliegue: login y listados funcionando a través de `vercel.app → onrender.com → Neon`.
+6. `GET /api/reportes/resumen` → totales y series (consultas por mes, citas por estado, diagnósticos, tipo de sangre, grupo de edad).
+7. Flujo de laboratorio: `POST /api/expedientes/1/ordenes` (médico) → `GET /api/laboratorio` (enfermería) → `PUT /api/laboratorio/:id` con resultado → orden completada; admisión recibe 403 (RBAC correcto).
+8. `npm run build` del frontend → compilación sin errores.
+9. Despliegue: login y listados funcionando a través de `vercel.app → onrender.com → Neon`.

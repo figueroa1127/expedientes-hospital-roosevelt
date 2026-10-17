@@ -1,11 +1,21 @@
 import { useState } from 'react';
 
+const ETIQUETA_ORDEN = {
+  solicitada: 'Solicitada',
+  en_proceso: 'En proceso',
+  completada: 'Completada',
+};
+
 export default function VistaExpediente({
   expediente,
   puedeRegistrarConsulta,
   puedeEditarAntecedentes,
+  puedeSolicitarOrden,
+  puedeRegistrarResultado,
   onAgregarConsulta,
   onActualizarAntecedentes,
+  onSolicitarOrden,
+  onRegistrarResultado,
 }) {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [motivo, setMotivo] = useState('');
@@ -19,6 +29,13 @@ export default function VistaExpediente({
   const [antecedentes, setAntecedentes] = useState(expediente?.antecedentes || '');
   const [alergias, setAlergias] = useState(expediente?.alergias || '');
   const [enviandoAntecedentes, setEnviandoAntecedentes] = useState(false);
+
+  const [mostrarFormOrden, setMostrarFormOrden] = useState(false);
+  const [examen, setExamen] = useState('');
+  const [indicaciones, setIndicaciones] = useState('');
+  const [enviandoOrden, setEnviandoOrden] = useState(false);
+  const [resultadoAbierto, setResultadoAbierto] = useState(null);
+  const [resultadoTexto, setResultadoTexto] = useState('');
 
   if (!expediente) {
     return <p className="vacio">Aún no hay un expediente registrado.</p>;
@@ -51,6 +68,29 @@ export default function VistaExpediente({
       setEnviandoAntecedentes(false);
     }
   }
+
+  async function manejarOrden(e) {
+    e.preventDefault();
+    setEnviandoOrden(true);
+    try {
+      await onSolicitarOrden({ examen, indicaciones });
+      setExamen('');
+      setIndicaciones('');
+      setMostrarFormOrden(false);
+    } finally {
+      setEnviandoOrden(false);
+    }
+  }
+
+  async function manejarResultado(ordenId) {
+    if (!resultadoTexto.trim()) return;
+    await onRegistrarResultado(ordenId, { resultado: resultadoTexto, estado: 'completada' });
+    setResultadoAbierto(null);
+    setResultadoTexto('');
+  }
+
+  const ordenes = expediente.ordenes || [];
+  const pendientes = ordenes.filter((o) => o.estado !== 'completada').length;
 
   return (
     <div>
@@ -94,6 +134,11 @@ export default function VistaExpediente({
           </form>
         ) : (
           <>
+            {expediente.alergias && expediente.alergias.trim() && (
+              <div className="alerta-alergia">
+                <strong>Alerta de alergias:</strong> {expediente.alergias}
+              </div>
+            )}
             <p>
               <strong>Antecedentes:</strong>{' '}
               {expediente.antecedentes || 'Sin antecedentes registrados.'}
@@ -164,6 +209,127 @@ export default function VistaExpediente({
           )}
         </div>
       )}
+
+      <div className="tarjeta">
+        <h3>
+          Órdenes de laboratorio
+          {pendientes > 0 && <span className="chip-pendientes">{pendientes} pendiente(s)</span>}
+        </h3>
+
+        {puedeSolicitarOrden && (
+          mostrarFormOrden ? (
+            <form onSubmit={manejarOrden} style={{ marginBottom: 12 }}>
+              <div className="form-en-linea">
+                <div className="campo">
+                  <label>Examen solicitado</label>
+                  <input
+                    value={examen}
+                    onChange={(e) => setExamen(e.target.value)}
+                    placeholder="Ej. Hemograma completo"
+                    required
+                  />
+                </div>
+                <div className="campo">
+                  <label>Indicaciones</label>
+                  <input
+                    value={indicaciones}
+                    onChange={(e) => setIndicaciones(e.target.value)}
+                    placeholder="Ej. Ayuno de 8 horas"
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  className="boton-primario"
+                  type="submit"
+                  style={{ width: 'auto' }}
+                  disabled={enviandoOrden}
+                >
+                  {enviandoOrden ? 'Solicitando…' : 'Solicitar examen'}
+                </button>
+                <button type="button" className="boton-secundario" onClick={() => setMostrarFormOrden(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button className="boton-secundario" style={{ marginBottom: 12 }} onClick={() => setMostrarFormOrden(true)}>
+              + Solicitar examen de laboratorio
+            </button>
+          )
+        )}
+
+        {ordenes.length === 0 ? (
+          <p className="vacio">Sin órdenes de laboratorio.</p>
+        ) : (
+          ordenes.map((o) => (
+            <div className="orden-item" key={o.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <strong>{o.examen}</strong>
+                <span className={`insignia-orden ${o.estado}`}>{ETIQUETA_ORDEN[o.estado]}</span>
+              </div>
+              <p style={{ margin: '4px 0' }}>
+                Solicitado por {o.medico_nombre} el {new Date(o.fecha_solicitud).toLocaleDateString('es-GT')}
+              </p>
+              {o.indicaciones && (
+                <p style={{ margin: '4px 0' }}>
+                  <strong>Indicaciones:</strong> {o.indicaciones}
+                </p>
+              )}
+
+              {o.estado === 'completada' ? (
+                <div className="resultado-caja">
+                  <strong>Resultado:</strong>
+                  <p style={{ margin: '4px 0 0' }}>{o.resultado || 'Sin detalle del resultado.'}</p>
+                </div>
+              ) : puedeRegistrarResultado && resultadoAbierto === o.id ? (
+                <div style={{ marginTop: 6 }}>
+                  <div className="campo">
+                    <label>Resultado del examen</label>
+                    <textarea
+                      rows={3}
+                      value={resultadoTexto}
+                      onChange={(e) => setResultadoTexto(e.target.value)}
+                      placeholder="Escribe los valores o la interpretación…"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      className="boton-primario"
+                      type="button"
+                      style={{ width: 'auto' }}
+                      onClick={() => manejarResultado(o.id)}
+                    >
+                      Guardar resultado
+                    </button>
+                    <button
+                      className="boton-secundario"
+                      type="button"
+                      onClick={() => {
+                        setResultadoAbierto(null);
+                        setResultadoTexto('');
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : puedeRegistrarResultado ? (
+                <button
+                  className="boton-secundario"
+                  style={{ marginTop: 4 }}
+                  onClick={() => {
+                    setResultadoAbierto(o.id);
+                    setResultadoTexto(o.resultado || '');
+                  }}
+                >
+                  Registrar resultado
+                </button>
+              ) : null}
+            </div>
+          ))
+        )}
+      </div>
 
       <h3 style={{ marginTop: 24 }}>Historial de consultas</h3>
       {expediente.consultas.length === 0 ? (

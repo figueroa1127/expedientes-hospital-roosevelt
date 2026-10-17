@@ -4,23 +4,30 @@ import { useAuth } from '../context/AuthContext';
 const ENLACES_POR_ROL = {
   administrador: [
     { to: '/', etiqueta: 'Resumen' },
+    { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
+    { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/citas', etiqueta: 'Citas' },
     { to: '/usuarios', etiqueta: 'Usuarios' },
   ],
   admision: [
     { to: '/', etiqueta: 'Resumen' },
+    { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/citas', etiqueta: 'Citas' },
   ],
   enfermeria: [
     { to: '/', etiqueta: 'Resumen' },
+    { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
+    { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/citas', etiqueta: 'Citas' },
   ],
   medico: [
     { to: '/', etiqueta: 'Resumen' },
+    { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
+    { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/citas', etiqueta: 'Mi agenda' },
   ],
   paciente: [
