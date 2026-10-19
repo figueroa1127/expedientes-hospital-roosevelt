@@ -17,7 +17,7 @@ import Usuarios from './pages/Usuarios';
 function Inicio() {
   const { usuario } = useAuth();
   if (usuario?.rol === 'enfermeria') return <Navigate to="/pacientes" replace />;
-  if (usuario?.rol === 'medico') return <Navigate to="/dashboard" replace />;
+  if (usuario?.rol === 'medico') return <Navigate to="/pacientes" replace />;
   return <Resumen />;
 }
 
@@ -39,7 +39,7 @@ export default function App() {
             <Route
               path="/dashboard"
               element={
-                <RutaProtegida rolesPermitidos={['medico', 'admision', 'administrador']}>
+                <RutaProtegida rolesPermitidos={['admision', 'administrador']}>
                   <Dashboard />
                 </RutaProtegida>
               }
