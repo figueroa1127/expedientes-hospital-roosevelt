@@ -18,6 +18,7 @@ function Inicio() {
   const { usuario } = useAuth();
   if (usuario?.rol === 'enfermeria') return <Navigate to="/pacientes" replace />;
   if (usuario?.rol === 'medico') return <Navigate to="/pacientes" replace />;
+  if (usuario?.rol === 'paciente') return <Navigate to="/mi-expediente" replace />;
   return <Resumen />;
 }
 

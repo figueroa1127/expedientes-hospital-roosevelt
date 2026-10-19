@@ -28,7 +28,6 @@ const ENLACES_POR_ROL = {
     { to: '/citas', etiqueta: 'Mi agenda' },
   ],
   paciente: [
-    { to: '/', etiqueta: 'Resumen' },
     { to: '/mi-expediente', etiqueta: 'Mi expediente' },
     { to: '/citas', etiqueta: 'Mis citas' },
   ],
