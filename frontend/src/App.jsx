@@ -17,6 +17,7 @@ import Usuarios from './pages/Usuarios';
 function Inicio() {
   const { usuario } = useAuth();
   if (usuario?.rol === 'enfermeria') return <Navigate to="/pacientes" replace />;
+  if (usuario?.rol === 'medico') return <Navigate to="/dashboard" replace />;
   return <Resumen />;
 }
 

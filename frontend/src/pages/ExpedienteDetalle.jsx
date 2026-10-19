@@ -59,7 +59,7 @@ export default function ExpedienteDetalle() {
           pacienteId={id}
           puedeRegistrarConsulta={usuario.rol === 'medico'}
           puedeEditarAntecedentes={['medico', 'enfermeria', 'administrador'].includes(usuario.rol)}
-          puedeRegistrarSignos={['medico', 'enfermeria'].includes(usuario.rol)}
+          puedeRegistrarSignos={['enfermeria'].includes(usuario.rol)}
           puedeSolicitarOrden={usuario.rol === 'medico'}
           puedeRegistrarResultado={['medico', 'enfermeria', 'administrador', 'laboratorio'].includes(usuario.rol)}
           onAgregarConsulta={manejarNuevaConsulta}
