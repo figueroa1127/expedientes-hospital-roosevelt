@@ -27,7 +27,6 @@ const ENLACES_POR_ROL = {
     { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Registro médico' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
-    { to: '/signos', etiqueta: 'Signos vitales' },
     { to: '/citas', etiqueta: 'Mi agenda' },
   ],
   paciente: [

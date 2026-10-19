@@ -54,7 +54,7 @@ export default function App() {
             <Route
               path="/signos"
               element={
-                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'administrador']}>
+                <RutaProtegida rolesPermitidos={['enfermeria', 'administrador']}>
                   <SignosVitales />
                 </RutaProtegida>
               }
