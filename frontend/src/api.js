@@ -54,6 +54,14 @@ export const api = {
 
   citas: (token) => solicitud('/citas', { token }),
   medicos: (token) => solicitud('/citas/medicos', { token }),
+  disponibilidadCitas: (token, medicoId, fecha, excluir) =>
+    solicitud(
+      `/citas/disponibilidad/${medicoId}?fecha=${fecha}${excluir ? `&excluir=${excluir}` : ''}`,
+      { token }
+    ),
+  miHorario: (token) => solicitud('/citas/mi-horario', { token }),
+  guardarMiHorario: (token, franjas) =>
+    solicitud('/citas/mi-horario', { method: 'PUT', body: { franjas }, token }),
   crearCita: (token, datos) => solicitud('/citas', { method: 'POST', body: datos, token }),
   reagendarCita: (token, id, datos) =>
     solicitud(`/citas/${id}`, { method: 'PUT', body: datos, token }),

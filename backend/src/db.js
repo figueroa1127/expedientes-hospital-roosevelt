@@ -105,6 +105,14 @@ CREATE TABLE IF NOT EXISTS citas (
   creado_por INTEGER REFERENCES usuarios(id)
 );
 
+CREATE TABLE IF NOT EXISTS disponibilidad_medico (
+  id SERIAL PRIMARY KEY,
+  medico_id INTEGER NOT NULL REFERENCES medicos(id) ON DELETE CASCADE,
+  dia_semana SMALLINT NOT NULL CHECK (dia_semana BETWEEN 0 AND 6),
+  hora_inicio TEXT NOT NULL,
+  hora_fin TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS ordenes_laboratorio (
   id SERIAL PRIMARY KEY,
   expediente_id INTEGER NOT NULL REFERENCES expedientes(id) ON DELETE CASCADE,
@@ -149,6 +157,16 @@ ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS genero TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_nombre TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_tipo TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_datos TEXT;
+`);
+
+  // Horario por defecto (lunes a viernes, mañana y tarde) para médicos sin disponibilidad.
+  await pool.query(`
+INSERT INTO disponibilidad_medico (medico_id, dia_semana, hora_inicio, hora_fin)
+SELECT m.id, d.dia, t.ini, t.fin
+FROM medicos m
+CROSS JOIN (VALUES (1),(2),(3),(4),(5)) AS d(dia)
+CROSS JOIN (VALUES ('08:00','12:00'),('14:00','17:00')) AS t(ini,fin)
+WHERE NOT EXISTS (SELECT 1 FROM disponibilidad_medico dm WHERE dm.medico_id = m.id);
 `);
 }
 
