@@ -18,7 +18,7 @@ router.get('/', requireRole('administrador'), asyncHandler(async (req, res) => {
 // POST /api/usuarios -> el administrador crea cuentas para personal o pacientes
 router.post('/', requireRole('administrador'), asyncHandler(async (req, res) => {
   const { nombre, correo, password, rol } = req.body;
-  const rolesValidos = ['paciente', 'medico', 'enfermeria', 'admision', 'administrador'];
+  const rolesValidos = ['paciente', 'medico', 'enfermeria', 'admision', 'administrador', 'laboratorio'];
 
   if (!nombre || !correo || !password || !rol) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });

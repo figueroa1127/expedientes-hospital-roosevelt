@@ -24,8 +24,10 @@ const ENLACES_POR_ROL = {
   ],
   medico: [
     { to: '/pacientes', etiqueta: 'Registro médico' },
-    { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/citas', etiqueta: 'Mi agenda' },
+  ],
+  laboratorio: [
+    { to: '/laboratorio', etiqueta: 'Laboratorio' },
   ],
   paciente: [
     { to: '/mi-expediente', etiqueta: 'Mi expediente' },

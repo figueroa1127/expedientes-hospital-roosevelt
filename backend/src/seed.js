@@ -420,6 +420,13 @@ async function main() {
     rol: 'enfermeria',
   });
 
+  await upsertUsuario({
+    nombre: 'Laboratorio Central',
+    correo: 'laboratorio@hospitalroosevelt.gt',
+    password: 'Laboratorio123!',
+    rol: 'laboratorio',
+  });
+
   const medicoUsuarioId = await upsertUsuario({
     nombre: 'Dr. Mario Solís',
     correo: 'medico@hospitalroosevelt.gt',
@@ -450,6 +457,7 @@ async function main() {
     { rol: 'administrador', correo: 'admin@hospitalroosevelt.gt', password: 'Admin123!' },
     { rol: 'admision', correo: 'admision@hospitalroosevelt.gt', password: 'Admision123!' },
     { rol: 'enfermeria', correo: 'enfermeria@hospitalroosevelt.gt', password: 'Enfermeria123!' },
+    { rol: 'laboratorio', correo: 'laboratorio@hospitalroosevelt.gt', password: 'Laboratorio123!' },
     { rol: 'medico', correo: 'medico@hospitalroosevelt.gt', password: 'Medico123!' },
     { rol: 'paciente', correo: 'paciente@hospitalroosevelt.gt', password: 'Paciente123!' },
   ]);

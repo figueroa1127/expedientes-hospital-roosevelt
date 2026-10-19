@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nombre TEXT NOT NULL,
   correo TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  rol TEXT NOT NULL CHECK (rol IN ('paciente','medico','enfermeria','admision','administrador')),
+  rol TEXT NOT NULL CHECK (rol IN ('paciente','medico','enfermeria','admision','administrador','laboratorio')),
   creado_en TEXT NOT NULL DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS')
 );
 
@@ -157,6 +157,10 @@ ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS genero TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_nombre TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_tipo TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_datos TEXT;
+
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_rol_check;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_rol_check
+  CHECK (rol IN ('paciente','medico','enfermeria','admision','administrador','laboratorio'));
 `);
 
   // Horario por defecto (lunes a viernes, mañana y tarde) para médicos sin disponibilidad.

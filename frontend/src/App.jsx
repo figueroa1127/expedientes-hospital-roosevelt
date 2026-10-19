@@ -19,6 +19,7 @@ function Inicio() {
   if (usuario?.rol === 'enfermeria') return <Navigate to="/pacientes" replace />;
   if (usuario?.rol === 'medico') return <Navigate to="/pacientes" replace />;
   if (usuario?.rol === 'paciente') return <Navigate to="/mi-expediente" replace />;
+  if (usuario?.rol === 'laboratorio') return <Navigate to="/laboratorio" replace />;
   return <Resumen />;
 }
 
@@ -48,7 +49,7 @@ export default function App() {
             <Route
               path="/laboratorio"
               element={
-                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'administrador']}>
+                <RutaProtegida rolesPermitidos={['enfermeria', 'administrador', 'laboratorio']}>
                   <Laboratorio />
                 </RutaProtegida>
               }

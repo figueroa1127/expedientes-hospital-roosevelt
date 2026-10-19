@@ -6,6 +6,7 @@ const ROLES = [
   { valor: 'paciente', etiqueta: 'Paciente' },
   { valor: 'medico', etiqueta: 'Médico' },
   { valor: 'enfermeria', etiqueta: 'Enfermería' },
+  { valor: 'laboratorio', etiqueta: 'Laboratorio' },
   { valor: 'admision', etiqueta: 'Admisión' },
   { valor: 'administrador', etiqueta: 'Administrador' },
 ];

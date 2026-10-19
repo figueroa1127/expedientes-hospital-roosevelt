@@ -6,6 +6,7 @@ const CUENTAS_DEMO = [
   { rol: 'Administrador', correo: 'admin@hospitalroosevelt.gt', password: 'Admin123!' },
   { rol: 'Admisión', correo: 'admision@hospitalroosevelt.gt', password: 'Admision123!' },
   { rol: 'Enfermería', correo: 'enfermeria@hospitalroosevelt.gt', password: 'Enfermeria123!' },
+  { rol: 'Laboratorio', correo: 'laboratorio@hospitalroosevelt.gt', password: 'Laboratorio123!' },
   { rol: 'Médico', correo: 'medico@hospitalroosevelt.gt', password: 'Medico123!' },
   { rol: 'Paciente', correo: 'paciente@hospitalroosevelt.gt', password: 'Paciente123!' },
 ];
