@@ -1,5 +1,5 @@
 // Crea usuarios y datos de demostración para poder iniciar sesión de inmediato
-// con cada uno de los 5 roles definidos en la arquitectura del sistema,
+// con cada uno de los 6 roles definidos en la arquitectura del sistema,
 // además de una lista de pacientes de ejemplo con expediente, consultas,
 // citas y órdenes de laboratorio para poblar el panel de control.
 const bcrypt = require('bcryptjs');

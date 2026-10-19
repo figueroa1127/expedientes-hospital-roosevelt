@@ -33,56 +33,53 @@ celular.
 
 ## 3. ¿Quién lo puede usar?
 
-Para entrar hay que tener una cuenta. Cada persona entra con su correo y su
-contraseña, y el sistema le muestra **solo lo que le corresponde** a su tipo de
-trabajo:
+Para entrar hay que tener una cuenta. El sistema le muestra a cada persona
+**solo lo que le corresponde** a su tipo de trabajo:
 
-| Tipo de usuario | Puede hacer |
-|---|---|
-| **Paciente** | Ver su propio expediente, sus signos vitales y sus citas |
-| **Doctor** | Ver la lista de pacientes, abrir su expediente, registrar consultas, recetas y signos vitales, y ver su agenda |
-| **Enfermería** | Consultar expedientes, la agenda de citas y registrar/ver signos vitales |
-| **Admisión** | Registrar o actualizar los datos de los pacientes y agendar citas |
-| **Administrador** | Hacer todo lo anterior y además crear cuentas de usuario |
+| Tipo de usuario | Cómo entra | Puede hacer |
+|---|---|---|
+| **Paciente** | Con su **DPI y contraseña** | Ver su propio expediente, sus signos vitales y sus citas |
+| **Doctor** | Con su correo | Ver pacientes, abrir su expediente, registrar consultas, recetas, solicitar exámenes y ver su agenda |
+| **Enfermería** | Con su correo | Consultar expedientes, la bandeja de laboratorio, la agenda y registrar/ver signos vitales |
+| **Laboratorio** | Con su correo | Ver la bandeja de exámenes y registrar resultados (o adjuntar el archivo del resultado) |
+| **Admisión** | Con su correo | Registrar/actualizar pacientes, agendar y reagendar citas, y ver el panel con gráficas |
+| **Administrador** | Con su correo | Hacer todo lo anterior y además crear cuentas de usuario |
 
 Esta separación se llama **control de acceso por roles**: el sistema decide qué
 puede ver cada persona según su trabajo, por seguridad.
-
-> Además, un **paciente puede crear su propia cuenta** desde la pantalla de
-> acceso (ver paso 4.2), sin que se la cree un administrador.
 
 ---
 
 ## 4. Cómo usarlo paso a paso
 
-### 4.1 Entrar
+### 4.1 Entrar (personal del hospital)
 
 1. Abre la dirección de la página.
-2. Escribe tu correo y tu contraseña.
-3. Presiona **Iniciar sesión**.
+2. En la pestaña **Personal**, escribe tu correo y tu contraseña.
+3. Presiona **Ingresar**.
 
 En la pantalla de entrada hay botones de "cuentas de demostración" que rellenan
 los datos solos para que puedas probarlo sin crear cuentas.
 
-### 4.2 Crear tu propia cuenta (lo hace el propio paciente)
+### 4.2 Entrar como paciente (con el DPI)
 
-1. En la pantalla de entrada, haz clic en **Crear cuenta** (o "Registrarse").
-2. Llena tu nombre, correo, una contraseña (mínimo 6 caracteres) y, si quieres,
-   tus datos personales: teléfono, fecha de nacimiento, DPI, tipo de sangre y
-   dirección.
-3. Presiona **Crear cuenta**. El sistema te deja la sesión iniciada como
-   **paciente** y crea tu expediente automáticamente.
+1. En la pantalla de entrada, elige la pestaña **Paciente**.
+2. Escribe tu **número de DPI** y tu contraseña y presiona **Ingresar**.
+3. **Primera vez:** usa la opción **Crear acceso**, elige tu contraseña y
+   presiona **Crear mi acceso**. A partir de ahí ya podrás ingresar con tu DPI.
 
-> El sistema no deja crear dos cuentas con el mismo correo. Si el correo ya
-> existe, te avisa para que inicies sesión en lugar de registrarte.
+> El paciente **no** crea su cuenta solo: es **Admisión** quien lo da de alta en
+> el hospital con sus datos. Si escribes un DPI que no está registrado, el
+> sistema te avisa: *"Por favor solicítelo en admisión."*
 
 ### 4.3 Registrar un paciente nuevo (lo hace Admisión o Administrador)
 
-1. Entra como **Administrador**.
-2. Ve al menú **Usuarios** → **+ Crear usuario**.
-3. Escribe nombre, correo y una contraseña.
-4. Elige el rol **paciente**.
-5. Presiona **Crear usuario**.
+1. Entra como **Admisión** o **Administrador**.
+2. Ve al menú **Pacientes** → **+ Registrar paciente**.
+3. Escribe el nombre, el correo y los datos personales (DPI, teléfono, fecha de
+   nacimiento, tipo de sangre, dirección, etc.).
+4. Presiona **Registrar paciente**. Se crea su ficha y su expediente.
+5. El paciente pondrá su propia contraseña cuando entre con su DPI (paso 4.2).
 
 ### 4.4 Actualizar los datos de un paciente
 
@@ -109,9 +106,16 @@ los datos solos para que puedas probarlo sin crear cuentas.
 5. Agrega uno o más medicamentos (medicamento, dosis e indicaciones).
 6. Guarda. La consulta y sus recetas quedan en el historial.
 
-### 4.7 Registrar signos vitales (lo hace Enfermería o el Doctor)
+### 4.7 Solicitar un examen de laboratorio
 
-1. Entra como **Enfermería** o **Doctor**.
+1. **El Doctor** abre el expediente del paciente y solicita el examen.
+2. **Laboratorio** (o Enfermería) ve la orden en el menú **Laboratorio**.
+3. Ahí escribe el resultado o adjunta el archivo (PDF o foto) y la orden queda
+   como **completada**.
+
+### 4.8 Registrar signos vitales (lo hace Enfermería)
+
+1. Entra como **Enfermería**.
 2. Puedes hacerlo de dos maneras:
    - Menú **Signos vitales** → **+ Registrar signos** (eliges al paciente), o
    - Abre el expediente de un paciente y usa la tarjeta **Signos vitales**.
@@ -121,15 +125,30 @@ los datos solos para que puedas probarlo sin crear cuentas.
 4. Guarda. El registro aparece con la fecha y **quién lo capturó**, y el
    paciente puede ver sus propios signos en su expediente.
 
-### 4.8 Agendar una cita (lo hace Admisión, Administrador o el Paciente)
+### 4.9 Agendar una cita (lo hace Admisión, Administrador o el Doctor)
 
-1. Entra como **Admisión**, **Administrador** o **Paciente**.
-2. Ve al menú **Citas**.
-3. Presiona **+ Nueva cita**.
-4. Elige el médico, la fecha y el motivo.
-5. Guarda. La cita queda como **programada**.
+1. Entra como **Admisión**, **Administrador** o **Doctor**.
+2. Ve al menú **Citas** y presiona **+ Agendar cita**.
+3. Admisión y Administrador escriben el **DPI del paciente** (y pueden buscarlo);
+   el Doctor agenda en su propia agenda.
+4. Elige el **médico**, la **fecha** y el **motivo**.
+5. El sistema muestra los **horarios disponibles** de ese médico (cupos de 30
+   minutos según su horario de atención). Si un horario ya tiene una cita,
+   aparece **tachado y no se puede elegir**, con el aviso *"Elige otra hora u
+   otra fecha."*
+6. Guarda. La cita queda como **programada**.
 
-### 4.9 Cambiar el estado de una cita
+> **Doctor:** en **Mi agenda** puedes definir tu **horario de atención** (días y
+> horas) para habilitar tus cupos.
+
+### 4.10 Buscar citas por fecha (lo hace Admisión)
+
+1. Entra como **Admisión** (o Administrador) y ve al menú **Citas**.
+2. Usa el campo **Buscar por fecha** y elige un día.
+3. La tabla muestra solo las citas de ese día. Presiona **Limpiar** para ver
+   todas de nuevo.
+
+### 4.11 Cambiar el estado de una cita
 
 1. Entra como **Doctor**, **Enfermería**, **Admisión** o **Administrador**.
 2. Ve al menú **Citas**.
@@ -148,12 +167,13 @@ Cada tipo de dato tiene su propia tabla:
 | Tabla | Qué guarda |
 |---|---|
 | Usuarios | Quiénes tienen cuenta y con qué rol |
-| Pacientes | Los datos personales (DPI, teléfono, dirección, tipo de sangre) |
+| Pacientes | Los datos personales (DPI, registro médico, género, teléfono, dirección, tipo de sangre) y si su acceso está activo |
 | Médicos | El número de colegiado y la especialidad de cada doctor |
 | Expedientes | Los antecedentes y las alergias de cada paciente |
 | Consultas | Cada visita al doctor: motivo, diagnóstico y notas |
 | Recetas | Las medicinas recetadas en cada consulta |
-| Órdenes de laboratorio | Los exámenes solicitados, su estado y su resultado |
+| Órdenes de laboratorio | Los exámenes solicitados, su estado, su resultado y el archivo adjunto |
+| Disponibilidad médica | Los días y horas en que cada doctor atiende (para generar los cupos de citas) |
 | Citas | La agenda de citas con su fecha y estado |
 | Signos vitales | Temperatura, presión, frecuencias, saturación, peso y talla de cada toma |
 | Auditoría | Un registro automático de quién hizo qué y cuándo |
@@ -190,9 +210,10 @@ y hay que volver a entrar.
 ## 7. ¿Quién registró cada dato?
 
 El sistema lleva una **bitácora automática** (la tabla de auditoría). Cada vez
-que alguien inicia sesión, crea un paciente, registra signos vitales, consulta
-un expediente o registra una cita, se anota: quién, qué hizo y a qué hora. Esto
-ayuda a dar seguimiento y es una buena práctica para hospitales.
+que alguien inicia sesión, activa su acceso, registra un paciente, registra
+signos vitales, consulta un expediente o agenda una cita, se anota: quién, qué
+hizo y a qué hora. Esto ayuda a dar seguimiento y es una buena práctica para
+hospitales.
 
 ---
 
@@ -203,13 +224,14 @@ ayuda a dar seguimiento y es una buena práctica para hospitales.
 | Administrador | admin@hospitalroosevelt.gt | Admin123! |
 | Admisión | admision@hospitalroosevelt.gt | Admision123! |
 | Enfermería | enfermeria@hospitalroosevelt.gt | Enfermeria123! |
+| Laboratorio | laboratorio@hospitalroosevelt.gt | Laboratorio123! |
 | Doctor | medico@hospitalroosevelt.gt | Medico123! |
-| Paciente | paciente@hospitalroosevelt.gt | Paciente123! |
+| Paciente | DPI 1234567890101 | Paciente123! |
 
 > Además de estas cuentas, el sistema viene con decenas de **pacientes de
 > demostración** (con expedientes, citas y signos vitales) para que las listas y
-> las gráficas se vean con datos reales. También puedes crear tus propias
-> cuentas con el botón **Crear cuenta** de la pantalla de acceso.
+> las gráficas se vean con datos reales. En la pantalla de acceso hay botones de
+> **cuentas de demostración** que rellenan los datos solos.
 
 ---
 
@@ -217,6 +239,8 @@ ayuda a dar seguimiento y es una buena práctica para hospitales.
 
 - **No se pierde la información**: está en la nube, no en papeles ni en una sola computadora.
 - **Cada persona ve solo lo suyo**: un paciente nunca puede ver el expediente de otro.
+- **Los pacientes entran solos con su DPI**, pero su cuenta la habilita el hospital (admisión), por seguridad.
+- **Agenda ordenada**: cada médico define su horario y el sistema no permite dos citas en el mismo cupo.
 - **Todo queda registrado**: quién vio qué, quién agregó qué y cuándo.
 - **Fácil de usar**: no necesita capacitación larga; las pantallas son claras.
 - **Escalable**: se puede ampliar (más hospitales, más funciones) sin empezar de cero.
