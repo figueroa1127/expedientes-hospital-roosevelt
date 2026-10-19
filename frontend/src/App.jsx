@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import RutaProtegida from './components/RutaProtegida';
 import Layout from './components/Layout';
 
@@ -13,6 +13,12 @@ import Citas from './pages/Citas';
 import Laboratorio from './pages/Laboratorio';
 import SignosVitales from './pages/SignosVitales';
 import Usuarios from './pages/Usuarios';
+
+function Inicio() {
+  const { usuario } = useAuth();
+  if (usuario?.rol === 'enfermeria') return <Navigate to="/pacientes" replace />;
+  return <Resumen />;
+}
 
 export default function App() {
   return (
@@ -28,11 +34,11 @@ export default function App() {
               </RutaProtegida>
             }
           >
-            <Route path="/" element={<Resumen />} />
+            <Route path="/" element={<Inicio />} />
             <Route
               path="/dashboard"
               element={
-                <RutaProtegida rolesPermitidos={['medico', 'enfermeria', 'admision', 'administrador']}>
+                <RutaProtegida rolesPermitidos={['medico', 'admision', 'administrador']}>
                   <Dashboard />
                 </RutaProtegida>
               }

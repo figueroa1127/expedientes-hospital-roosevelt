@@ -125,7 +125,7 @@ export default function Pacientes() {
   return (
     <div>
       <div className="encabezado-pagina">
-        <h1>Pacientes</h1>
+        <h1>{usuario.rol === 'medico' ? 'Registro médico' : 'Pacientes'}</h1>
         <p>Listado de pacientes registrados en el sistema.</p>
       </div>
 

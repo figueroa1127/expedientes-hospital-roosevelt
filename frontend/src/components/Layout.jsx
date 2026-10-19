@@ -18,8 +18,6 @@ const ENLACES_POR_ROL = {
     { to: '/citas', etiqueta: 'Citas' },
   ],
   enfermeria: [
-    { to: '/', etiqueta: 'Resumen' },
-    { to: '/dashboard', etiqueta: 'Panel de control' },
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/signos', etiqueta: 'Signos vitales' },
@@ -27,7 +25,7 @@ const ENLACES_POR_ROL = {
   medico: [
     { to: '/', etiqueta: 'Resumen' },
     { to: '/dashboard', etiqueta: 'Panel de control' },
-    { to: '/pacientes', etiqueta: 'Pacientes' },
+    { to: '/pacientes', etiqueta: 'Registro médico' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/signos', etiqueta: 'Signos vitales' },
     { to: '/citas', etiqueta: 'Mi agenda' },
