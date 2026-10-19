@@ -21,7 +21,6 @@ const NUEVO_VACIO = {
   dpi: '',
   nombre: '',
   correo: '',
-  password: '',
   genero: '',
   registro_medico: '',
   fecha_nacimiento: '',
@@ -168,27 +167,18 @@ export default function Pacientes() {
                 />
               </div>
             </div>
-            <div className="rejilla-campos">
-              <div className="campo">
-                <label>Correo electrónico</label>
-                <input
-                  type="email"
-                  value={nuevo.correo || ''}
-                  onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="campo">
-                <label>Contraseña temporal</label>
-                <input
-                  type="text"
-                  value={nuevo.password || ''}
-                  onChange={(e) => setNuevo({ ...nuevo, password: e.target.value })}
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                />
-              </div>
+            <div className="campo">
+              <label>Correo electrónico</label>
+              <input
+                type="email"
+                value={nuevo.correo || ''}
+                onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
+                required
+              />
             </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--gris-texto)', marginTop: -4 }}>
+              El paciente creará su propia contraseña al ingresar con su DPI en la pantalla de acceso.
+            </p>
             <div className="rejilla-campos">
               <div className="campo">
                 <label>Género</label>

@@ -9,7 +9,7 @@ router.use(requireAuth);
 
 const SELECT_PACIENTES = `
   SELECT p.id, p.dpi, p.registro_medico, p.genero, p.fecha_nacimiento,
-         p.telefono, p.direccion, p.tipo_sangre,
+         p.telefono, p.direccion, p.tipo_sangre, p.acceso_activo,
          u.nombre, u.correo
   FROM pacientes p
   JOIN usuarios u ON u.id = p.usuario_id
@@ -44,14 +44,16 @@ router.post('/', requireRole('admision', 'administrador'), asyncHandler(async (r
     tipo_sangre,
   } = req.body;
 
-  if (!nombre || !nombre.trim() || !correo || !password) {
-    return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios.' });
+  if (!nombre || !nombre.trim() || !correo) {
+    return res.status(400).json({ error: 'Nombre y correo son obligatorios.' });
   }
   const correoNormalizado = String(correo).trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoNormalizado)) {
     return res.status(400).json({ error: 'El correo no tiene un formato válido.' });
   }
-  if (String(password).length < 6) {
+
+  const conAcceso = Boolean(password);
+  if (conAcceso && String(password).length < 6) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
   }
 
@@ -60,7 +62,10 @@ router.post('/', requireRole('admision', 'administrador'), asyncHandler(async (r
     return res.status(409).json({ error: 'Ya existe una cuenta con ese correo electrónico.' });
   }
 
-  const hash = bcrypt.hashSync(String(password), 10);
+  const hashBase = conAcceso
+    ? String(password)
+    : `${Math.random().toString(36).slice(2)}${Date.now()}`;
+  const hash = bcrypt.hashSync(hashBase, 10);
   const client = await pool.connect();
   let nuevoId;
   try {
@@ -73,8 +78,8 @@ router.post('/', requireRole('admision', 'administrador'), asyncHandler(async (r
     nuevoId = usuarioId;
 
     const paciente = await client.query(
-      `INSERT INTO pacientes (usuario_id, dpi, registro_medico, genero, fecha_nacimiento, telefono, direccion, tipo_sangre)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      `INSERT INTO pacientes (usuario_id, dpi, registro_medico, genero, fecha_nacimiento, telefono, direccion, tipo_sangre, acceso_activo)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
       [
         usuarioId,
         dpi ? String(dpi).trim() : null,
@@ -84,6 +89,7 @@ router.post('/', requireRole('admision', 'administrador'), asyncHandler(async (r
         telefono || null,
         direccion || null,
         tipo_sangre || null,
+        conAcceso,
       ]
     );
 

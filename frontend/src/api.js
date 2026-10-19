@@ -20,7 +20,8 @@ async function solicitud(ruta, { method = 'GET', body, token } = {}) {
 
 export const api = {
   login: (correo, password) => solicitud('/auth/login', { method: 'POST', body: { correo, password } }),
-  registro: (datos) => solicitud('/auth/registro', { method: 'POST', body: datos }),
+  accesoPaciente: (dpi, password, crear) =>
+    solicitud('/auth/paciente/acceso', { method: 'POST', body: { dpi, password, crear } }),
   perfil: (token) => solicitud('/auth/perfil', { token }),
 
   pacientes: (token) => solicitud('/pacientes', { token }),

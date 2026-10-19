@@ -8,56 +8,29 @@ const CUENTAS_DEMO = [
   { rol: 'Enfermería', correo: 'enfermeria@hospitalroosevelt.gt', password: 'Enfermeria123!' },
   { rol: 'Laboratorio', correo: 'laboratorio@hospitalroosevelt.gt', password: 'Laboratorio123!' },
   { rol: 'Médico', correo: 'medico@hospitalroosevelt.gt', password: 'Medico123!' },
-  { rol: 'Paciente', correo: 'paciente@hospitalroosevelt.gt', password: 'Paciente123!' },
+  { rol: 'Paciente', tipo: 'paciente', dpi: '1234567890101', password: 'Paciente123!' },
 ];
 
-const TIPOS_SANGRE = ['', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-
-const GENEROS = ['', 'Masculino', 'Femenino', 'Otro', 'Prefiero no decir'];
-
-const REGISTRO_VACIO = {
-  dpi: '',
-  nombre: '',
-  correo: '',
-  genero: '',
-  registro_medico: '',
-  password: '',
-  confirmar: '',
-  fecha_nacimiento: '',
-  telefono: '',
-  tipo_sangre: '',
-  direccion: '',
-};
-
-// Calcula la edad (en años) a partir de la fecha de nacimiento.
-function calcularEdad(fecha) {
-  if (!fecha) return null;
-  const nacimiento = new Date(fecha);
-  if (Number.isNaN(nacimiento.getTime())) return null;
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - nacimiento.getFullYear();
-  const m = hoy.getMonth() - nacimiento.getMonth();
-  if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
-  return edad >= 0 ? edad : null;
-}
-
 export default function Login() {
-  const [modo, setModo] = useState('login');
+  const [tipoAcceso, setTipoAcceso] = useState('personal');
+  const [accionPaciente, setAccionPaciente] = useState('ingresar');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [registro, setRegistro] = useState(REGISTRO_VACIO);
+  const [dpi, setDpi] = useState('');
+  const [passwordPaciente, setPasswordPaciente] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
-  const { iniciarSesion, registrar } = useAuth();
+  const { iniciarSesion, accesoPaciente } = useAuth();
   const navigate = useNavigate();
 
-  function cambiarModo(nuevo) {
+  function cambiarTipo(nuevo) {
     setError('');
-    setModo(nuevo);
+    setTipoAcceso(nuevo);
   }
 
-  function actualizarCampo(campo, valor) {
-    setRegistro((prev) => ({ ...prev, [campo]: valor }));
+  function cambiarAccionPaciente(nuevo) {
+    setError('');
+    setAccionPaciente(nuevo);
   }
 
   async function manejarEnvio(e) {
@@ -65,32 +38,11 @@ export default function Login() {
     setError('');
     setCargando(true);
     try {
-      await iniciarSesion(correo, password);
-      navigate('/');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setCargando(false);
-    }
-  }
-
-  async function manejarRegistro(e) {
-    e.preventDefault();
-    setError('');
-
-    if (registro.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-    if (registro.password !== registro.confirmar) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
-
-    setCargando(true);
-    try {
-      const { confirmar, ...datos } = registro;
-      await registrar(datos);
+      if (tipoAcceso === 'personal') {
+        await iniciarSesion(correo, password);
+      } else {
+        await accesoPaciente(dpi.trim(), passwordPaciente, accionPaciente === 'crear');
+      }
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -100,9 +52,30 @@ export default function Login() {
   }
 
   function usarCuentaDemo(c) {
-    setCorreo(c.correo);
-    setPassword(c.password);
+    setError('');
+    if (c.tipo === 'paciente') {
+      setTipoAcceso('paciente');
+      setAccionPaciente('ingresar');
+      setDpi(c.dpi);
+      setPasswordPaciente(c.password);
+    } else {
+      setTipoAcceso('personal');
+      setCorreo(c.correo);
+      setPassword(c.password);
+    }
   }
+
+  const botonSegmento = (activo) => ({
+    flex: 1,
+    padding: '8px 10px',
+    borderRadius: 8,
+    border: '1px solid var(--linea)',
+    background: activo ? 'var(--azul-clinico)' : 'transparent',
+    color: activo ? '#fff' : 'var(--gris-texto)',
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: '0.9rem',
+  });
 
   return (
     <div className="pantalla-login">
@@ -129,224 +102,113 @@ export default function Login() {
 
       <div className="login-formulario">
         <div className="tarjeta-login">
-          <h2>{modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta de paciente'}</h2>
+          <h2>{tipoAcceso === 'personal' ? 'Iniciar sesión' : 'Acceso de pacientes'}</h2>
           <p className="subtitulo">
-            {modo === 'login'
+            {tipoAcceso === 'personal'
               ? 'Ingresa con tu correo institucional.'
-              : 'Regístrate para consultar tu expediente y tus citas.'}
+              : accionPaciente === 'crear'
+              ? 'Crea tu acceso usando tu número de DPI.'
+              : 'Ingresa con tu número de DPI y contraseña.'}
           </p>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button type="button" style={botonSegmento(tipoAcceso === 'personal')} onClick={() => cambiarTipo('personal')}>
+              Personal
+            </button>
+            <button type="button" style={botonSegmento(tipoAcceso === 'paciente')} onClick={() => cambiarTipo('paciente')}>
+              Paciente
+            </button>
+          </div>
 
           {error && <div className="mensaje-error">{error}</div>}
 
-          {modo === 'login' ? (
-            <>
-              <form onSubmit={manejarEnvio}>
-                <div className="campo">
-                  <label htmlFor="correo">Correo electrónico</label>
-                  <input
-                    id="correo"
-                    type="email"
-                    value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
-                    placeholder="nombre@hospitalroosevelt.gt"
-                    required
-                  />
-                </div>
-                <div className="campo">
-                  <label htmlFor="password">Contraseña</label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <button className="boton-primario" type="submit" disabled={cargando}>
-                  {cargando ? 'Ingresando…' : 'Ingresar'}
-                </button>
-              </form>
-
-              <div className="cuentas-demo">
-                <strong>Cuentas de demostración</strong> (clic para autocompletar):
-                <div style={{ marginTop: 8 }}>
-                  {CUENTAS_DEMO.map((c) => (
-                    <button key={c.correo} className="chip-rol" onClick={() => usarCuentaDemo(c)} type="button">
-                      {c.rol}
-                    </button>
-                  ))}
-                </div>
+          {tipoAcceso === 'personal' ? (
+            <form onSubmit={manejarEnvio}>
+              <div className="campo">
+                <label htmlFor="correo">Correo electrónico</label>
+                <input
+                  id="correo"
+                  type="email"
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
+                  placeholder="nombre@hospitalroosevelt.gt"
+                  required
+                />
               </div>
-            </>
+              <div className="campo">
+                <label htmlFor="password">Contraseña</label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <button className="boton-primario" type="submit" disabled={cargando}>
+                {cargando ? 'Ingresando…' : 'Ingresar'}
+              </button>
+            </form>
           ) : (
-            <form onSubmit={manejarRegistro}>
+            <form onSubmit={manejarEnvio}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                <button
+                  type="button"
+                  style={botonSegmento(accionPaciente === 'ingresar')}
+                  onClick={() => cambiarAccionPaciente('ingresar')}
+                >
+                  Ingresar
+                </button>
+                <button
+                  type="button"
+                  style={botonSegmento(accionPaciente === 'crear')}
+                  onClick={() => cambiarAccionPaciente('crear')}
+                >
+                  Crear acceso
+                </button>
+              </div>
               <div className="campo">
                 <label htmlFor="dpi">DPI</label>
                 <input
                   id="dpi"
                   type="text"
-                  value={registro.dpi}
-                  onChange={(e) => actualizarCampo('dpi', e.target.value)}
+                  value={dpi}
+                  onChange={(e) => setDpi(e.target.value)}
                   placeholder="Documento de identificación"
                   required
                 />
               </div>
               <div className="campo">
-                <label htmlFor="nombre">Nombre completo</label>
+                <label htmlFor="password-paciente">Contraseña</label>
                 <input
-                  id="nombre"
-                  type="text"
-                  value={registro.nombre}
-                  onChange={(e) => actualizarCampo('nombre', e.target.value)}
-                  placeholder="Nombre y apellidos"
+                  id="password-paciente"
+                  type="password"
+                  value={passwordPaciente}
+                  onChange={(e) => setPasswordPaciente(e.target.value)}
+                  placeholder={accionPaciente === 'crear' ? 'Elige una contraseña (mín. 6)' : '••••••••'}
                   required
-                />
-              </div>
-              <div className="campo">
-                <label htmlFor="correo-reg">Correo electrónico</label>
-                <input
-                  id="correo-reg"
-                  type="email"
-                  value={registro.correo}
-                  onChange={(e) => actualizarCampo('correo', e.target.value)}
-                  placeholder="tucorreo@ejemplo.com"
-                  required
-                />
-              </div>
-              <div className="rejilla-campos">
-                <div className="campo">
-                  <label htmlFor="genero">Género</label>
-                  <select
-                    id="genero"
-                    value={registro.genero}
-                    onChange={(e) => actualizarCampo('genero', e.target.value)}
-                  >
-                    {GENEROS.map((g) => (
-                      <option key={g || 'vacio'} value={g}>
-                        {g || 'Selecciona…'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="campo">
-                  <label htmlFor="registro_medico">Registro médico</label>
-                  <input
-                    id="registro_medico"
-                    type="text"
-                    value={registro.registro_medico}
-                    onChange={(e) => actualizarCampo('registro_medico', e.target.value)}
-                    placeholder="Número de registro o expediente"
-                  />
-                </div>
-              </div>
-              <div className="rejilla-campos">
-                <div className="campo">
-                  <label htmlFor="fecha_nacimiento">Fecha de nacimiento</label>
-                  <input
-                    id="fecha_nacimiento"
-                    type="date"
-                    value={registro.fecha_nacimiento}
-                    onChange={(e) => actualizarCampo('fecha_nacimiento', e.target.value)}
-                  />
-                </div>
-                <div className="campo">
-                  <label htmlFor="edad">Edad</label>
-                  <input
-                    id="edad"
-                    type="text"
-                    value={
-                      calcularEdad(registro.fecha_nacimiento) !== null
-                        ? `${calcularEdad(registro.fecha_nacimiento)} años`
-                        : ''
-                    }
-                    placeholder="Se calcula automáticamente"
-                    readOnly
-                  />
-                </div>
-              </div>
-              <div className="rejilla-campos">
-                <div className="campo">
-                  <label htmlFor="password-reg">Contraseña</label>
-                  <input
-                    id="password-reg"
-                    type="password"
-                    value={registro.password}
-                    onChange={(e) => actualizarCampo('password', e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    required
-                  />
-                </div>
-                <div className="campo">
-                  <label htmlFor="confirmar">Confirmar contraseña</label>
-                  <input
-                    id="confirmar"
-                    type="password"
-                    value={registro.confirmar}
-                    onChange={(e) => actualizarCampo('confirmar', e.target.value)}
-                    placeholder="Repite la contraseña"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="rejilla-campos">
-                <div className="campo">
-                  <label htmlFor="telefono">Teléfono</label>
-                  <input
-                    id="telefono"
-                    type="tel"
-                    value={registro.telefono}
-                    onChange={(e) => actualizarCampo('telefono', e.target.value)}
-                    placeholder="Ej. 5555-5555"
-                  />
-                </div>
-                <div className="campo">
-                  <label htmlFor="tipo_sangre">Tipo de sangre</label>
-                  <select
-                    id="tipo_sangre"
-                    value={registro.tipo_sangre}
-                    onChange={(e) => actualizarCampo('tipo_sangre', e.target.value)}
-                  >
-                    {TIPOS_SANGRE.map((t) => (
-                      <option key={t || 'vacio'} value={t}>
-                        {t || 'Selecciona…'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="campo">
-                <label htmlFor="direccion">Dirección</label>
-                <input
-                  id="direccion"
-                  type="text"
-                  value={registro.direccion}
-                  onChange={(e) => actualizarCampo('direccion', e.target.value)}
-                  placeholder="Opcional"
                 />
               </div>
               <button className="boton-primario" type="submit" disabled={cargando}>
-                {cargando ? 'Creando cuenta…' : 'Registrarme'}
+                {cargando
+                  ? 'Procesando…'
+                  : accionPaciente === 'crear'
+                  ? 'Crear mi acceso'
+                  : 'Ingresar'}
               </button>
             </form>
           )}
 
-          <div className="cambiar-modo">
-            {modo === 'login' ? (
-              <>
-                ¿No tienes cuenta?{' '}
-                <button type="button" className="enlace-cambiar" onClick={() => cambiarModo('registro')}>
-                  Regístrate
+          <div className="cuentas-demo">
+            <strong>Cuentas de demostración</strong> (clic para autocompletar):
+            <div style={{ marginTop: 8 }}>
+              {CUENTAS_DEMO.map((c) => (
+                <button key={c.correo || c.rol} className="chip-rol" onClick={() => usarCuentaDemo(c)} type="button">
+                  {c.rol}
                 </button>
-              </>
-            ) : (
-              <>
-                ¿Ya tienes cuenta?{' '}
-                <button type="button" className="enlace-cambiar" onClick={() => cambiarModo('login')}>
-                  Inicia sesión
-                </button>
-              </>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>

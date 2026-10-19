@@ -30,6 +30,9 @@ export default function Citas() {
 
   const [medicoId, setMedicoId] = useState('');
   const [pacienteId, setPacienteId] = useState('');
+  const [pacienteDpi, setPacienteDpi] = useState('');
+  const [pacienteEncontrado, setPacienteEncontrado] = useState(null);
+  const [buscandoPaciente, setBuscandoPaciente] = useState(false);
   const [fecha, setFecha] = useState('');
   const [cupos, setCupos] = useState([]);
   const [cupoSeleccionado, setCupoSeleccionado] = useState('');
@@ -53,6 +56,7 @@ export default function Citas() {
   const puedeReagendar = ['admision', 'administrador'].includes(usuario.rol);
   const puedeCambiarEstado = ['medico', 'admision', 'administrador'].includes(usuario.rol);
   const esMedico = usuario.rol === 'medico';
+  const agendarPorDpi = ['admision', 'administrador'].includes(usuario.rol);
 
   async function cargarTodo() {
     setCargando(true);
@@ -127,10 +131,37 @@ export default function Citas() {
     return () => { activo = false; };
   }, [rmedico, rfecha, reagendando, token]);
 
+  async function buscarPorDpi() {
+    setError('');
+    setPacienteEncontrado(null);
+    const dpi = pacienteDpi.trim();
+    if (!dpi) {
+      setError('Ingresa el DPI del paciente.');
+      return null;
+    }
+    setBuscandoPaciente(true);
+    try {
+      const p = await api.buscarPacienteDpi(token, dpi);
+      setPacienteEncontrado(p);
+      return p;
+    } catch (err) {
+      setError('No se encontró un paciente con ese DPI. Regístralo primero en Pacientes.');
+      return null;
+    } finally {
+      setBuscandoPaciente(false);
+    }
+  }
+
   async function manejarEnvio(e) {
     e.preventDefault();
     setError('');
-    if (!pacienteId || !medicoId || !fecha || !cupoSeleccionado) {
+    let idPaciente = pacienteId;
+    if (agendarPorDpi) {
+      const p = pacienteEncontrado || (await buscarPorDpi());
+      if (!p) return;
+      idPaciente = p.id;
+    }
+    if (!idPaciente || !medicoId || !fecha || !cupoSeleccionado) {
       setError('Selecciona paciente, médico, fecha y horario disponible.');
       return;
     }
@@ -138,12 +169,14 @@ export default function Citas() {
     try {
       await api.crearCita(token, {
         medico_id: Number(medicoId),
-        paciente_id: Number(pacienteId),
+        paciente_id: Number(idPaciente),
         fecha: `${fecha}T${cupoSeleccionado}`,
         motivo,
       });
       setMedicoId('');
       setPacienteId('');
+      setPacienteDpi('');
+      setPacienteEncontrado(null);
       setFecha('');
       setCupos([]);
       setCupoSeleccionado('');
@@ -280,13 +313,43 @@ export default function Citas() {
             <form onSubmit={manejarEnvio}>
               <div className="form-en-linea">
                 <div className="campo">
-                  <label>Paciente</label>
-                  <select value={pacienteId} onChange={(e) => setPacienteId(e.target.value)} required>
-                    <option value="">Selecciona…</option>
-                    {pacientes.map((p) => (
-                      <option key={p.id} value={p.id}>{p.nombre}</option>
-                    ))}
-                  </select>
+                  <label>Paciente {agendarPorDpi && '(por DPI)'}</label>
+                  {agendarPorDpi ? (
+                    <>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input
+                          value={pacienteDpi}
+                          onChange={(e) => {
+                            setPacienteDpi(e.target.value);
+                            setPacienteEncontrado(null);
+                          }}
+                          placeholder="Número de DPI"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="boton-secundario"
+                          style={{ width: 'auto', whiteSpace: 'nowrap' }}
+                          onClick={buscarPorDpi}
+                          disabled={buscandoPaciente}
+                        >
+                          {buscandoPaciente ? 'Buscando…' : 'Buscar'}
+                        </button>
+                      </div>
+                      {pacienteEncontrado && (
+                        <span style={{ color: 'var(--verde-ok)', fontSize: '0.85rem' }}>
+                          Paciente: {pacienteEncontrado.nombre}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <select value={pacienteId} onChange={(e) => setPacienteId(e.target.value)} required>
+                      <option value="">Selecciona…</option>
+                      {pacientes.map((p) => (
+                        <option key={p.id} value={p.id}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div className="campo">
                   <label>Médico</label>

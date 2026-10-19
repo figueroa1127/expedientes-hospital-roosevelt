@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS pacientes (
   fecha_nacimiento TEXT,
   telefono TEXT,
   direccion TEXT,
-  tipo_sangre TEXT
+  tipo_sangre TEXT,
+  acceso_activo BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS medicos (
@@ -154,6 +155,7 @@ CREATE TABLE IF NOT EXISTS auditoria (
 
 ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS registro_medico TEXT;
 ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS genero TEXT;
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS acceso_activo BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_nombre TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_tipo TEXT;
 ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_datos TEXT;

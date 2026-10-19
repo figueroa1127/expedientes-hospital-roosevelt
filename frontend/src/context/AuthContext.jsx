@@ -31,8 +31,8 @@ export function AuthProvider({ children }) {
     return res.usuario;
   }
 
-  async function registrar(datos) {
-    const res = await api.registro(datos);
+  async function accesoPaciente(dpi, password, crear) {
+    const res = await api.accesoPaciente(dpi, password, crear);
     localStorage.setItem('hrv_token', res.token);
     setToken(res.token);
     setUsuario(res.usuario);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, usuario, cargando, iniciarSesion, registrar, cerrarSesion }}>
+    <AuthContext.Provider value={{ token, usuario, cargando, iniciarSesion, accesoPaciente, cerrarSesion }}>
       {children}
     </AuthContext.Provider>
   );
