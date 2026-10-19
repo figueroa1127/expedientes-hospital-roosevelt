@@ -12,17 +12,33 @@ const CUENTAS_DEMO = [
 
 const TIPOS_SANGRE = ['', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
+const GENEROS = ['', 'Masculino', 'Femenino', 'Otro', 'Prefiero no decir'];
+
 const REGISTRO_VACIO = {
+  dpi: '',
   nombre: '',
   correo: '',
+  genero: '',
+  registro_medico: '',
   password: '',
   confirmar: '',
-  dpi: '',
   fecha_nacimiento: '',
   telefono: '',
-  direccion: '',
   tipo_sangre: '',
+  direccion: '',
 };
+
+// Calcula la edad (en años) a partir de la fecha de nacimiento.
+function calcularEdad(fecha) {
+  if (!fecha) return null;
+  const nacimiento = new Date(fecha);
+  if (Number.isNaN(nacimiento.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const m = hoy.getMonth() - nacimiento.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+  return edad >= 0 ? edad : null;
+}
 
 export default function Login() {
   const [modo, setModo] = useState('login');
@@ -106,7 +122,7 @@ export default function Login() {
           </p>
         </div>
         <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-          Guatemala, Guatemala · Sistema de expedientes médicos digitales
+          Creado por Edy Figueroa y Joel Castillo · Sistema de expedientes médicos digitales
         </p>
       </div>
 
@@ -165,6 +181,17 @@ export default function Login() {
           ) : (
             <form onSubmit={manejarRegistro}>
               <div className="campo">
+                <label htmlFor="dpi">DPI</label>
+                <input
+                  id="dpi"
+                  type="text"
+                  value={registro.dpi}
+                  onChange={(e) => actualizarCampo('dpi', e.target.value)}
+                  placeholder="Documento de identificación"
+                  required
+                />
+              </div>
+              <div className="campo">
                 <label htmlFor="nombre">Nombre completo</label>
                 <input
                   id="nombre"
@@ -185,6 +212,57 @@ export default function Login() {
                   placeholder="tucorreo@ejemplo.com"
                   required
                 />
+              </div>
+              <div className="rejilla-campos">
+                <div className="campo">
+                  <label htmlFor="genero">Género</label>
+                  <select
+                    id="genero"
+                    value={registro.genero}
+                    onChange={(e) => actualizarCampo('genero', e.target.value)}
+                  >
+                    {GENEROS.map((g) => (
+                      <option key={g || 'vacio'} value={g}>
+                        {g || 'Selecciona…'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="campo">
+                  <label htmlFor="registro_medico">Registro médico</label>
+                  <input
+                    id="registro_medico"
+                    type="text"
+                    value={registro.registro_medico}
+                    onChange={(e) => actualizarCampo('registro_medico', e.target.value)}
+                    placeholder="Número de registro o expediente"
+                  />
+                </div>
+              </div>
+              <div className="rejilla-campos">
+                <div className="campo">
+                  <label htmlFor="fecha_nacimiento">Fecha de nacimiento</label>
+                  <input
+                    id="fecha_nacimiento"
+                    type="date"
+                    value={registro.fecha_nacimiento}
+                    onChange={(e) => actualizarCampo('fecha_nacimiento', e.target.value)}
+                  />
+                </div>
+                <div className="campo">
+                  <label htmlFor="edad">Edad</label>
+                  <input
+                    id="edad"
+                    type="text"
+                    value={
+                      calcularEdad(registro.fecha_nacimiento) !== null
+                        ? `${calcularEdad(registro.fecha_nacimiento)} años`
+                        : ''
+                    }
+                    placeholder="Se calcula automáticamente"
+                    readOnly
+                  />
+                </div>
               </div>
               <div className="rejilla-campos">
                 <div className="campo">
@@ -219,27 +297,6 @@ export default function Login() {
                     value={registro.telefono}
                     onChange={(e) => actualizarCampo('telefono', e.target.value)}
                     placeholder="Ej. 5555-5555"
-                  />
-                </div>
-                <div className="campo">
-                  <label htmlFor="fecha_nacimiento">Fecha de nacimiento</label>
-                  <input
-                    id="fecha_nacimiento"
-                    type="date"
-                    value={registro.fecha_nacimiento}
-                    onChange={(e) => actualizarCampo('fecha_nacimiento', e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="rejilla-campos">
-                <div className="campo">
-                  <label htmlFor="dpi">DPI (opcional)</label>
-                  <input
-                    id="dpi"
-                    type="text"
-                    value={registro.dpi}
-                    onChange={(e) => actualizarCampo('dpi', e.target.value)}
-                    placeholder="Documento de identificación"
                   />
                 </div>
                 <div className="campo">

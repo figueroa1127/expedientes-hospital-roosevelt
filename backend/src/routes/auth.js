@@ -63,6 +63,8 @@ router.post(
       correo,
       password,
       dpi,
+      registro_medico,
+      genero,
       fecha_nacimiento,
       telefono,
       direccion,
@@ -103,11 +105,13 @@ router.post(
       nuevoId = usuarioId;
 
       const paciente = await client.query(
-        `INSERT INTO pacientes (usuario_id, dpi, fecha_nacimiento, telefono, direccion, tipo_sangre)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        `INSERT INTO pacientes (usuario_id, dpi, registro_medico, genero, fecha_nacimiento, telefono, direccion, tipo_sangre)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
         [
           usuarioId,
           dpi ? String(dpi).trim() : null,
+          registro_medico ? String(registro_medico).trim() : null,
+          genero || null,
           fecha_nacimiento || null,
           telefono || null,
           direccion || null,

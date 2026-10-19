@@ -4,6 +4,12 @@ Prototipo de digitalización de registros médicos descrito en el capítulo de
 arquitectura de la tesis. Este documento describe la arquitectura, el modelo
 de datos, la API REST completa y el control de acceso por rol (RBAC).
 
+El sistema incorpora, además de la gestión de expedientes, citas y
+laboratorio: **autoregistro público de pacientes** desde la pantalla de
+acceso, un módulo de **signos vitales** (captura por enfermería/médico y
+consulta por el paciente) y una **interfaz con fotografías** reales del
+entorno hospitalario.
+
 ---
 
 ## 1. Arquitectura general
@@ -52,6 +58,7 @@ al arrancar el servidor y por `npm run seed`.
 | `recetas` | N por `consultas` | Medicamento, dosis, indicaciones |
 | `ordenes_laboratorio` | N por `expedientes` | Exámenes solicitados, estado y resultado |
 | `citas` | N por `pacientes` y `medicos` | Fecha, motivo, estado y quién la creó |
+| `signos_vitales` | N por `pacientes` | Temperatura, presión, frecuencias, saturación, peso y talla; quién los registró |
 | `auditoria` | N por `usuarios` | Traza de cada acción relevante (login, creación, consulta, etc.) |
 
 ### Columnas principales
@@ -72,6 +79,8 @@ al arrancar el servidor y por `npm run seed`.
 
 **citas** · `id`, `paciente_id` (FK), `medico_id` (FK), `fecha`, `motivo`, `estado` ∈ (`programada`,`atendida`,`cancelada`), `creado_por`
 
+**signos_vitales** · `id`, `paciente_id` (FK), `registrado_por` (FK `usuarios`), `fecha`, `temperatura`, `presion_sistolica`, `presion_diastolica`, `frecuencia_cardiaca`, `frecuencia_respiratoria`, `saturacion_oxigeno`, `peso`, `talla`, `notas`
+
 **auditoria** · `id`, `usuario_id` (FK), `accion`, `detalle`, `fecha`
 
 ### Integridad referencial
@@ -88,6 +97,7 @@ registro de una consulta con sus recetas en `routes/expedientes.js`.
 ### JWT
 
 - Se genera en `POST /api/auth/login` con payload `{ id, nombre, correo, rol }`.
+- También se emite en `POST /api/auth/registro` (autoregistro) mediante el mismo helper `firmarToken`.
 - Algoritmo HS256, firma con la variable `JWT_SECRET`.
 - Vigencia: `JWT_EXPIRES_IN` (por defecto `8h`).
 - El frontend lo guarda en `localStorage` bajo la clave `hrv_token` y lo envía en `Authorization: Bearer <token>`.
@@ -110,7 +120,14 @@ registro de una consulta con sus recetas en `routes/expedientes.js`.
 | Ver panel de control (indicadores y gráficas) | — | ✅ | ✅ | ✅ | ✅ |
 | Solicitar examen de laboratorio | — | ✅ | — | — | — |
 | Ver bandeja de laboratorio y registrar resultados | — | ✅ | ✅ | — | ✅ |
+| Ver sus propios signos vitales | ✅ | — | — | — | — |
+| Registrar signos vitales | — | ✅ | ✅ | — | — |
+| Ver los signos vitales de un paciente | — | ✅ | ✅ | — | ✅ |
 | Crear usuarios | — | — | — | — | ✅ |
+
+> El **autoregistro** (`POST /api/auth/registro`) es público: cualquier persona
+> puede crear su propia cuenta, pero el rol se fija siempre en `paciente` en el
+> servidor (no se puede pedir otro rol desde el formulario).
 
 ---
 
@@ -133,9 +150,10 @@ Todas las respuestas son JSON. Las rutas con 🔒 requieren `Authorization: Bear
 
 ### 4.2 Autenticación
 
-| Método | Raza | Acceso | Descripción |
+| Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/api/auth/login` | Público | Inicia sesión y devuelve JWT |
+| POST | `/api/auth/login` | Público | Inicia sesión y devuelve JWT (correo sin distinguir mayúsculas) |
+| POST | `/api/auth/registro` | Público | Autoregistro de un paciente (crea usuario, ficha y expediente) |
 | GET | `/api/auth/perfil` | 🔒 | Devuelve el usuario del token (valida la sesión) |
 
 **POST `/api/auth/login`**
@@ -149,6 +167,28 @@ Todas las respuestas son JSON. Las rutas con 🔒 requieren `Authorization: Bear
                "correo": "admin@hospitalroosevelt.gt", "rol": "administrador" } }
 
 // Errores: 400 campos obligatorios · 401 credenciales incorrectas
+```
+
+**POST `/api/auth/registro`**
+
+Crea una cuenta con rol fijo `paciente` y, en una sola transacción, su ficha
+demográfica y su expediente. Devuelve el mismo `token` y `usuario` que el login,
+por lo que la persona queda con la sesión iniciada.
+
+```json
+// Petición
+{ "nombre": "Lucía Ramírez", "correo": "lucia@correo.com",
+  "password": "Clave123!", "dpi": "1234567890101",
+  "fecha_nacimiento": "1995-03-22", "telefono": "5555-1234",
+  "direccion": "Zona 11, Guatemala", "tipo_sangre": "O+" }
+
+// Respuesta 201
+{ "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "usuario": { "id": 8, "nombre": "Lucía Ramírez",
+               "correo": "lucia@correo.com", "rol": "paciente" } }
+
+// Errores: 400 nombre/correo/password faltantes o inválidos
+//          409 ya existe una cuenta con ese correo
 ```
 
 ### 4.3 Usuarios
@@ -309,6 +349,43 @@ Las órdenes también viajan dentro de la respuesta del expediente, en el arregl
 }
 ```
 
+### 4.9 Signos vitales
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/signos` | 🔒 medico, enfermeria, administrador | Registros más recientes de todos los pacientes |
+| GET | `/api/signos/mio` | 🔒 paciente | Los signos vitales del propio paciente |
+| GET | `/api/signos/paciente/:pacienteId` | 🔒 medico, enfermeria, administrador | Historial de signos de un paciente |
+| POST | `/api/signos` | 🔒 medico, enfermeria | Registra una toma de signos vitales |
+
+**POST `/api/signos`**
+```json
+// Petición (cualquier signo puede omitirse, pero debe haber al menos uno)
+{ "paciente_id": 1, "temperatura": 36.8, "presion_sistolica": 120,
+  "presion_diastolica": 80, "frecuencia_cardiaca": 78,
+  "frecuencia_respiratoria": 16, "saturacion_oxigeno": 98,
+  "peso": 72.5, "talla": 1.70, "notas": "Paciente en reposo." }
+
+// Respuesta 201
+{ "id": 19, "mensaje": "Signos vitales registrados correctamente." }
+// Errores: 400 sin paciente o sin ningún signo · 404 paciente no encontrado
+//          403 si el rol es paciente/admisión
+```
+
+**Respuesta de un listado (GET)**
+```json
+[ { "id": 19, "paciente_id": 1, "paciente_nombre": "Juan Pérez",
+    "fecha": "2026-10-15 09:30:00", "temperatura": "37.0",
+    "presion_sistolica": 120, "presion_diastolica": 80,
+    "frecuencia_cardiaca": 76, "frecuencia_respiratoria": 18,
+    "saturacion_oxigeno": 98, "peso": "72.50", "talla": "1.70",
+    "notas": "…", "registrado_por_nombre": "Enf. Karla Méndez" } ]
+```
+
+Los signos de un paciente también se muestran dentro de la tarjeta
+**Signos vitales** del expediente (`VistaExpediente.jsx`). Cada registro queda
+anotado en `auditoria` (`registrar_signos_vitales`).
+
 ---
 
 ## 5. Estructura del código
@@ -325,18 +402,19 @@ expedientes-hospital-roosevelt/
 │       ├── asyncHandler.js      Captura errores de controladores async
 │       ├── middleware/auth.js   requireAuth (JWT) y requireRole (RBAC)
 │       └── routes/              auth, usuarios, pacientes, expedientes,
-│                                citas, laboratorio, reportes
+│                                citas, laboratorio, signos, reportes
 └── frontend/                    Interfaz React
     ├── vercel.json              Rewrites /api → API de Render
     ├── vite.config.js           Puerto 5173, host, allowedHosts, proxy → 4000
+    ├── public/fotos/            Fotografías reales del sistema (login, panel)
     └── src/
         ├── api.js               Cliente REST (fetch + token)
         ├── App.jsx              Rutas y protecciones por rol
-        ├── context/AuthContext  Sesión: token, usuario, login/logout
+        ├── context/AuthContext  Sesión: token, usuario, login/registro/logout
         ├── components/          Layout, RutaProtegida, VistaExpediente, Graficas
         ├── pages/               Login, Resumen, Dashboard, Pacientes,
         │                        ExpedienteDetalle, MiExpediente, Citas,
-        │                        Laboratorio, Usuarios
+        │                        Laboratorio, SignosVitales, Usuarios
         └── styles/theme.css     Sistema de diseño (colores clínicos)
 ```
 
@@ -370,7 +448,8 @@ expedientes-hospital-roosevelt/
 - Contraseñas guardadas con **bcryptjs** (coste 10); nunca se exponen en la API.
 - Tokens **JWT firmados** con expiración; se envían por header `Authorization`.
 - **RBAC** verificado en el servidor (no confía en el frontend).
-- **Auditoría** de logins, creación de usuarios, vistas y modificaciones de expedientes y citas.
+- **Auditoría** de logins, autoregistros, creación de usuarios, vistas y modificaciones de expedientes, citas y signos vitales.
+- **Autoregistro controlado**: el rol se fija en `paciente` del lado del servidor (no se acepta un rol enviado por el cliente) y se validan nombre, formato de correo y longitud mínima de contraseña.
 - El archivo `.env` está en `.gitignore`; los secretos no se suben a GitHub.
 - Restricción de host en Vite (`allowedHosts`) para servir detrás de dominio público.
 - SSL obligatorio en la conexión a PostgreSQL en la nube (`sslmode=require`).
@@ -383,11 +462,13 @@ Verificación del flujo completo contra PostgreSQL local y, después, contra la
 nube (Neon + Render + Vercel):
 
 1. `npm install` → dependencias resueltas sin módulos nativos.
-2. `npm run seed` → 8 tablas creadas y 5 usuarios de prueba insertados.
+2. `npm run seed` → 10 tablas creadas y usuarios de prueba insertados (5 roles + pacientes de demostración).
 3. `GET /api/salud` → `estado: ok`.
 4. `POST /api/auth/login` con los 5 roles → token emitido correctamente.
 5. `GET /api/pacientes`, `GET /api/expedientes/paciente/:id`, `GET /api/citas` → datos coherentes (expediente con consultas y recetas).
 6. `GET /api/reportes/resumen` → totales y series (consultas por mes, citas por estado, diagnósticos, tipo de sangre, grupo de edad).
 7. Flujo de laboratorio: `POST /api/expedientes/1/ordenes` (médico) → `GET /api/laboratorio` (enfermería) → `PUT /api/laboratorio/:id` con resultado → orden completada; admisión recibe 403 (RBAC correcto).
-8. `npm run build` del frontend → compilación sin errores.
-9. Despliegue: login y listados funcionando a través de `vercel.app → onrender.com → Neon`.
+8. Autoregistro: `POST /api/auth/registro` → 201 con token y usuario `paciente` (crea ficha y expediente); correo repetido → 409; contraseña corta o correo inválido → 400; login con el correo en mayúsculas → 200 (búsqueda sin distinguir mayúsculas).
+9. Signos vitales: `POST /api/signos` (enfermería) → 201; sin ningún signo → 400; paciente con rol `paciente` → 403; `GET /api/signos` y `GET /api/signos/paciente/:id` devuelven el registro con `registrado_por_nombre`.
+10. `npm run build` del frontend → compilación sin errores.
+11. Despliegue: login, autoregistro, signos vitales y listados funcionando a través de `vercel.app → onrender.com → Neon`.

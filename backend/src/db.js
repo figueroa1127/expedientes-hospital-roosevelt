@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS pacientes (
   id SERIAL PRIMARY KEY,
   usuario_id INTEGER NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
   dpi TEXT,
+  registro_medico TEXT,
+  genero TEXT,
   fecha_nacimiento TEXT,
   telefono TEXT,
   direccion TEXT,
@@ -111,6 +113,9 @@ CREATE TABLE IF NOT EXISTS ordenes_laboratorio (
   indicaciones TEXT,
   estado TEXT NOT NULL DEFAULT 'solicitada' CHECK (estado IN ('solicitada','en_proceso','completada')),
   resultado TEXT,
+  archivo_nombre TEXT,
+  archivo_tipo TEXT,
+  archivo_datos TEXT,
   fecha_solicitud TEXT NOT NULL DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS'),
   fecha_resultado TEXT
 );
@@ -138,6 +143,12 @@ CREATE TABLE IF NOT EXISTS auditoria (
   detalle TEXT,
   fecha TEXT NOT NULL DEFAULT to_char(now(), 'YYYY-MM-DD HH24:MI:SS')
 );
+
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS registro_medico TEXT;
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS genero TEXT;
+ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_nombre TEXT;
+ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_tipo TEXT;
+ALTER TABLE ordenes_laboratorio ADD COLUMN IF NOT EXISTS archivo_datos TEXT;
 `);
 }
 

@@ -24,6 +24,9 @@ export const api = {
   perfil: (token) => solicitud('/auth/perfil', { token }),
 
   pacientes: (token) => solicitud('/pacientes', { token }),
+  buscarPacienteDpi: (token, dpi) => solicitud(`/pacientes/dpi/${encodeURIComponent(dpi)}`, { token }),
+  registrarPaciente: (token, datos) =>
+    solicitud('/pacientes', { method: 'POST', body: datos, token }),
   actualizarPaciente: (token, id, datos) =>
     solicitud(`/pacientes/${id}`, { method: 'PUT', body: datos, token }),
 
@@ -40,6 +43,7 @@ export const api = {
   laboratorio: (token) => solicitud('/laboratorio', { token }),
   actualizarOrdenLaboratorio: (token, id, datos) =>
     solicitud(`/laboratorio/${id}`, { method: 'PUT', body: datos, token }),
+  archivoLaboratorio: (token, id) => solicitud(`/laboratorio/${id}/archivo`, { token }),
 
   signos: (token) => solicitud('/signos', { token }),
   misSignos: (token) => solicitud('/signos/mio', { token }),
@@ -51,6 +55,8 @@ export const api = {
   citas: (token) => solicitud('/citas', { token }),
   medicos: (token) => solicitud('/citas/medicos', { token }),
   crearCita: (token, datos) => solicitud('/citas', { method: 'POST', body: datos, token }),
+  reagendarCita: (token, id, datos) =>
+    solicitud(`/citas/${id}`, { method: 'PUT', body: datos, token }),
   cambiarEstadoCita: (token, id, estado) =>
     solicitud(`/citas/${id}/estado`, { method: 'PUT', body: { estado }, token }),
 

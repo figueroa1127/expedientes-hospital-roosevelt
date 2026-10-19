@@ -23,7 +23,6 @@ const ENLACES_POR_ROL = {
     { to: '/pacientes', etiqueta: 'Pacientes' },
     { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/signos', etiqueta: 'Signos vitales' },
-    { to: '/citas', etiqueta: 'Citas' },
   ],
   medico: [
     { to: '/', etiqueta: 'Resumen' },

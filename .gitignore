@@ -8,6 +8,7 @@ dist/
 
 .en
 documentacion.html
+GUIA.html
 vite.log
 backend.log
 crear-paquete.ps1

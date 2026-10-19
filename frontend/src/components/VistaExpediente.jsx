@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
+import { leerArchivoBase64, formatoValido, abrirArchivoAdjunto } from '../utils/archivo';
 
 const ETIQUETA_ORDEN = {
   solicitada: 'Solicitada',
@@ -40,6 +41,7 @@ export default function VistaExpediente({
   const [enviandoOrden, setEnviandoOrden] = useState(false);
   const [resultadoAbierto, setResultadoAbierto] = useState(null);
   const [resultadoTexto, setResultadoTexto] = useState('');
+  const [resultadoArchivo, setResultadoArchivo] = useState(null);
 
   const { token } = useAuth();
   const [signos, setSignos] = useState([]);
@@ -119,11 +121,30 @@ export default function VistaExpediente({
     }
   }
 
-  async function manejarResultado(ordenId) {
-    if (!resultadoTexto.trim()) return;
-    await onRegistrarResultado(ordenId, { resultado: resultadoTexto, estado: 'completada' });
+  async function seleccionarResultadoArchivo(e, o) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!formatoValido(file.type)) {
+      alert('Formato no permitido. Usa PDF, PNG o JPG.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('El archivo es demasiado grande (máximo 5 MB).');
+      e.target.value = '';
+      return;
+    }
+    setResultadoArchivo(await leerArchivoBase64(file));
+  }
+  async function manejarResultado(ordenId, extra = {}) {
+    const datos = { estado: 'completada', ...extra };
+    if (resultadoTexto.trim()) datos.resultado = resultadoTexto;
+    if (resultadoArchivo) datos.archivo = resultadoArchivo;
+    if (!datos.resultado && !datos.archivo) return;
+    await onRegistrarResultado(ordenId, datos);
     setResultadoAbierto(null);
     setResultadoTexto('');
+    setResultadoArchivo(null);
   }
 
   const ordenes = expediente.ordenes || [];
@@ -476,6 +497,16 @@ export default function VistaExpediente({
                 <div className="resultado-caja">
                   <strong>Resultado:</strong>
                   <p style={{ margin: '4px 0 0' }}>{o.resultado || 'Sin detalle del resultado.'}</p>
+                  {o.archivo_nombre && (
+                    <button
+                      type="button"
+                      className="boton-secundario"
+                      style={{ marginTop: 8 }}
+                      onClick={() => abrirArchivoAdjunto(token, o.id).catch((e) => alert(e.message))}
+                    >
+                      Ver archivo adjunto ({o.archivo_nombre})
+                    </button>
+                  )}
                 </div>
               ) : puedeRegistrarResultado && resultadoAbierto === o.id ? (
                 <div style={{ marginTop: 6 }}>
@@ -487,6 +518,17 @@ export default function VistaExpediente({
                       onChange={(e) => setResultadoTexto(e.target.value)}
                       placeholder="Escribe los valores o la interpretación…"
                     />
+                  </div>
+                  <div className="campo">
+                    <label>Adjuntar archivo (PDF, PNG o JPG)</label>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={(e) => seleccionarResultadoArchivo(e, o)}
+                    />
+                    {resultadoArchivo && (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--verde-ok)' }}>{resultadoArchivo.nombre}</span>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button
@@ -503,6 +545,7 @@ export default function VistaExpediente({
                       onClick={() => {
                         setResultadoAbierto(null);
                         setResultadoTexto('');
+                        setResultadoArchivo(null);
                       }}
                     >
                       Cancelar
@@ -513,10 +556,11 @@ export default function VistaExpediente({
                 <button
                   className="boton-secundario"
                   style={{ marginTop: 4 }}
-                  onClick={() => {
-                    setResultadoAbierto(o.id);
-                    setResultadoTexto(o.resultado || '');
-                  }}
+                        onClick={() => {
+                          setResultadoAbierto(o.id);
+                          setResultadoTexto(o.resultado || '');
+                          setResultadoArchivo(null);
+                        }}
                 >
                   Registrar resultado
                 </button>

@@ -48,16 +48,10 @@ router.get('/medicos', asyncHandler(async (req, res) => {
   res.json(medicos.rows);
 }));
 
-// POST /api/citas -> agendar una cita (admisión, administrador, o el propio paciente)
-router.post('/', requireRole('admision', 'administrador', 'paciente'), asyncHandler(async (req, res) => {
+// POST /api/citas -> agendar una cita (admisión o administrador)
+router.post('/', requireRole('admision', 'administrador'), asyncHandler(async (req, res) => {
   const { medico_id, fecha, motivo, paciente_id } = req.body;
-  let pacienteIdFinal = paciente_id;
-
-  if (req.usuario.rol === 'paciente') {
-    const paciente = await pool.query('SELECT id FROM pacientes WHERE usuario_id = $1', [req.usuario.id]);
-    if (!paciente.rows[0]) return res.status(404).json({ error: 'No se encontró tu ficha de paciente.' });
-    pacienteIdFinal = paciente.rows[0].id;
-  }
+  const pacienteIdFinal = paciente_id;
 
   if (!pacienteIdFinal || !medico_id || !fecha) {
     return res.status(400).json({ error: 'Paciente, médico y fecha son obligatorios.' });
@@ -74,6 +68,32 @@ router.post('/', requireRole('admision', 'administrador', 'paciente'), asyncHand
   );
 
   res.status(201).json({ id: info.rows[0].id, mensaje: 'Cita agendada correctamente.' });
+}));
+
+// PUT /api/citas/:id -> reagendar una cita (fecha, médico y motivo). Admisión y administrador.
+router.put('/:id', requireRole('admision', 'administrador'), asyncHandler(async (req, res) => {
+  const { medico_id, fecha, motivo } = req.body;
+
+  const cita = await pool.query('SELECT * FROM citas WHERE id = $1', [req.params.id]);
+  if (!cita.rows[0]) return res.status(404).json({ error: 'Cita no encontrada.' });
+
+  const medicoFinal = medico_id || cita.rows[0].medico_id;
+  const fechaFinal = fecha || cita.rows[0].fecha;
+  const motivoFinal = motivo === undefined ? cita.rows[0].motivo : motivo;
+
+  await pool.query('UPDATE citas SET medico_id = $1, fecha = $2, motivo = $3 WHERE id = $4', [
+    medicoFinal,
+    fechaFinal,
+    motivoFinal,
+    req.params.id,
+  ]);
+
+  await pool.query(
+    'INSERT INTO auditoria (usuario_id, accion, detalle) VALUES ($1, $2, $3)',
+    [req.usuario.id, 'reagendar_cita', `Cita ${req.params.id} reagendada`]
+  );
+
+  res.json({ mensaje: 'Cita reagendada correctamente.' });
 }));
 
 // PUT /api/citas/:id/estado -> marcar cita como atendida o cancelada

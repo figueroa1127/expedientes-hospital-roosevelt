@@ -77,7 +77,14 @@ export default function App() {
                 </RutaProtegida>
               }
             />
-            <Route path="/citas" element={<Citas />} />
+            <Route
+              path="/citas"
+              element={
+                <RutaProtegida rolesPermitidos={['medico', 'admision', 'administrador', 'paciente']}>
+                  <Citas />
+                </RutaProtegida>
+              }
+            />
             <Route
               path="/usuarios"
               element={

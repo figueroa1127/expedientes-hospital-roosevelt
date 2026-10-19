@@ -36,7 +36,10 @@ async function cargarExpedienteCompleto(expedienteId) {
   }
 
   const os = await pool.query(
-    `SELECT o.*, u.nombre AS medico_nombre, m.especialidad
+    `SELECT o.id, o.examen, o.indicaciones, o.estado, o.resultado,
+            o.fecha_solicitud, o.fecha_resultado,
+            o.archivo_nombre, o.archivo_tipo, o.expediente_id, o.medico_id,
+            u.nombre AS medico_nombre, m.especialidad
      FROM ordenes_laboratorio o
      JOIN medicos m ON m.id = o.medico_id
      JOIN usuarios u ON u.id = m.usuario_id
