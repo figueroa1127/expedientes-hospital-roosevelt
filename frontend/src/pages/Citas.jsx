@@ -59,7 +59,7 @@ export default function Citas() {
   const puedeReagendar = ['admision', 'administrador'].includes(usuario.rol);
   const puedeCambiarEstado = ['medico', 'admision', 'administrador'].includes(usuario.rol);
   const esMedico = usuario.rol === 'medico';
-  const agendarPorDpi = ['admision', 'administrador'].includes(usuario.rol);
+  const agendarPorDpi = ['admision', 'administrador', 'medico'].includes(usuario.rol);
   const puedeFiltrarPorFecha = ['admision', 'administrador'].includes(usuario.rol);
   const citasFiltradas = filtroFecha
     ? citas.filter((c) => aInputFechaDia(c.fecha) === filtroFecha)

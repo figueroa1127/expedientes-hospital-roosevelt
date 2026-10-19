@@ -39,7 +39,7 @@ Para entrar hay que tener una cuenta. El sistema le muestra a cada persona
 | Tipo de usuario | Cómo entra | Puede hacer |
 |---|---|---|
 | **Paciente** | Con su **DPI y contraseña** | Ver su propio expediente, sus signos vitales y sus citas |
-| **Doctor** | Con su correo | Ver pacientes, abrir su expediente, registrar consultas, recetas, solicitar exámenes y ver su agenda |
+| **Doctor** | Con su correo | Ver pacientes, abrir su expediente, registrar consultas y recetas, solicitar exámenes, definir su horario y agendar citas por DPI |
 | **Enfermería** | Con su correo | Consultar expedientes, la agenda y registrar/ver signos vitales |
 | **Laboratorio** | Con su correo | Ver la bandeja de exámenes y registrar resultados (o adjuntar el archivo del resultado) |
 | **Admisión** | Con su correo | Registrar/actualizar pacientes, agendar y reagendar citas, y ver el panel con gráficas |
@@ -133,8 +133,8 @@ los datos solos para que puedas probarlo sin crear cuentas.
 
 1. Entra como **Admisión**, **Administrador** o **Doctor**.
 2. Ve al menú **Citas** y presiona **+ Agendar cita**.
-3. Admisión y Administrador escriben el **DPI del paciente** (y pueden buscarlo);
-   el Doctor agenda en su propia agenda.
+3. Escribe el **DPI del paciente** y presiona **Buscar**; el sistema confirma el
+   nombre. (Admisión, Administrador y el Doctor agendan de esta forma.)
 4. Elige el **médico**, la **fecha** y el **motivo**.
 5. El sistema muestra los **horarios disponibles** de ese médico (cupos de 30
    minutos según su horario de atención). Si un horario ya tiene una cita,

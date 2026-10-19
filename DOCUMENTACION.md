@@ -345,7 +345,7 @@ reagendar sin que la propia cita bloquee su horario.
 
 **POST `/api/citas`**
 ```json
-// Petición (admision/administrador indican paciente_id; el médico agenda en su propia agenda)
+// Petición (admision/administrador/medico localizan al paciente por su DPI y envían paciente_id)
 { "paciente_id": 1, "medico_id": 4, "fecha": "2026-10-26T10:00",
   "motivo": "Control de gastritis" }
 
