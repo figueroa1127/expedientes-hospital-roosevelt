@@ -27,13 +27,13 @@ const TIPOS_ARCHIVO = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'
 const MAX_ARCHIVO = 7 * 1024 * 1024; // ~7 MB en base64
 
 // GET /api/laboratorio -> bandeja de trabajo del laboratorio (personal clínico)
-router.get('/', requireRole('medico', 'enfermeria', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
+router.get('/', requireRole('medico', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
   const ordenes = await pool.query(`${SELECT_ORDENES} ORDER BY o.fecha_solicitud DESC`);
   res.json(ordenes.rows);
 }));
 
 // PUT /api/laboratorio/:id -> registrar resultado, subir archivo y/o cambiar estado
-router.put('/:id', requireRole('medico', 'enfermeria', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
+router.put('/:id', requireRole('medico', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
   const { estado, resultado, archivo } = req.body;
 
   const actual = await pool.query('SELECT * FROM ordenes_laboratorio WHERE id = $1', [req.params.id]);
@@ -90,7 +90,7 @@ router.put('/:id', requireRole('medico', 'enfermeria', 'administrador', 'laborat
 }));
 
 // GET /api/laboratorio/:id/archivo -> descargar el archivo adjunto de una orden
-router.get('/:id/archivo', requireRole('medico', 'enfermeria', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
+router.get('/:id/archivo', requireRole('medico', 'administrador', 'laboratorio'), asyncHandler(async (req, res) => {
   const r = await pool.query(
     'SELECT archivo_nombre, archivo_tipo, archivo_datos FROM ordenes_laboratorio WHERE id = $1',
     [req.params.id]

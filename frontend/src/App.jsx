@@ -49,7 +49,7 @@ export default function App() {
             <Route
               path="/laboratorio"
               element={
-                <RutaProtegida rolesPermitidos={['enfermeria', 'administrador', 'laboratorio']}>
+                <RutaProtegida rolesPermitidos={['administrador', 'laboratorio']}>
                   <Laboratorio />
                 </RutaProtegida>
               }

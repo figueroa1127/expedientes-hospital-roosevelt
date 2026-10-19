@@ -27,10 +27,13 @@ function presion(s) {
 export default function SignosVitales() {
   const { token, usuario } = useAuth();
   const [registros, setRegistros] = useState([]);
-  const [pacientes, setPacientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
+  const [busquedaDpi, setBusquedaDpi] = useState('');
   const [abierto, setAbierto] = useState(false);
+  const [dpi, setDpi] = useState('');
+  const [pacienteSel, setPacienteSel] = useState(null);
+  const [buscando, setBuscando] = useState(false);
   const [form, setForm] = useState({ paciente_id: '' });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
@@ -40,11 +43,11 @@ export default function SignosVitales() {
 
   useEffect(() => {
     let activo = true;
-    Promise.all([api.signos(token), api.pacientes(token)])
-      .then(([s, p]) => {
+    api
+      .signos(token)
+      .then((s) => {
         if (!activo) return;
         setRegistros(s);
-        setPacientes(p);
       })
       .catch((e) => activo && setError(e.message))
       .finally(() => activo && setCargando(false));
@@ -57,12 +60,36 @@ export default function SignosVitales() {
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
+  async function buscarPaciente() {
+    setError('');
+    setExito('');
+    setPacienteSel(null);
+    const valor = dpi.trim();
+    if (!valor) {
+      setError('Ingresa el DPI del paciente.');
+      return null;
+    }
+    setBuscando(true);
+    try {
+      const p = await api.buscarPacienteDpi(token, valor);
+      setPacienteSel(p);
+      actualizar('paciente_id', p.id);
+      return p;
+    } catch (err) {
+      setError('No se encontró un paciente con ese DPI.');
+      return null;
+    } finally {
+      setBuscando(false);
+    }
+  }
+
   async function guardar(e) {
     e.preventDefault();
     setError('');
     setExito('');
-    if (!form.paciente_id) {
-      setError('Selecciona un paciente.');
+    const p = pacienteSel || (await buscarPaciente());
+    if (!p || !form.paciente_id) {
+      setError('Busca al paciente por su DPI antes de guardar.');
       return;
     }
     setGuardando(true);
@@ -71,6 +98,8 @@ export default function SignosVitales() {
       const s = await api.signos(token);
       setRegistros(s);
       setForm({ paciente_id: '' });
+      setDpi('');
+      setPacienteSel(null);
       setAbierto(false);
       setExito('Signos vitales registrados correctamente.');
     } catch (err) {
@@ -80,8 +109,10 @@ export default function SignosVitales() {
     }
   }
 
-  const visibles = registros.filter((r) =>
-    (r.paciente_nombre || '').toLowerCase().includes(busqueda.toLowerCase())
+  const visibles = registros.filter(
+    (r) =>
+      (r.paciente_nombre || '').toLowerCase().includes(busqueda.toLowerCase()) &&
+      (r.paciente_dpi || '').toLowerCase().includes(busquedaDpi.trim().toLowerCase())
   );
 
   return (
@@ -99,16 +130,33 @@ export default function SignosVitales() {
           {abierto ? (
             <form onSubmit={guardar}>
               <h3>Registrar signos vitales</h3>
-              <div className="campo" style={{ maxWidth: 360 }}>
-                <label>Paciente</label>
-                <select value={form.paciente_id} onChange={(e) => actualizar('paciente_id', e.target.value)} required>
-                  <option value="">Selecciona un paciente…</option>
-                  {pacientes.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
+              <div className="campo" style={{ maxWidth: 420 }}>
+                <label>Paciente (DPI)</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={dpi}
+                    onChange={(e) => {
+                      setDpi(e.target.value);
+                      setPacienteSel(null);
+                      actualizar('paciente_id', '');
+                    }}
+                    placeholder="Número de DPI"
+                  />
+                  <button
+                    type="button"
+                    className="boton-secundario"
+                    style={{ width: 'auto', whiteSpace: 'nowrap' }}
+                    onClick={buscarPaciente}
+                    disabled={buscando}
+                  >
+                    {buscando ? 'Buscando…' : 'Buscar'}
+                  </button>
+                </div>
+                {pacienteSel && (
+                  <span style={{ color: 'var(--verde-ok)', fontSize: '0.85rem' }}>
+                    Paciente: {pacienteSel.nombre}
+                  </span>
+                )}
               </div>
 
               <div className="rejilla-signos">
@@ -171,8 +219,13 @@ export default function SignosVitales() {
       <div className="tarjeta">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0 }}>Registros recientes</h3>
-          <div className="campo" style={{ margin: 0, maxWidth: 260 }}>
-            <input placeholder="Filtrar por paciente…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="campo" style={{ margin: 0, maxWidth: 220 }}>
+              <input placeholder="Filtrar por paciente…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            </div>
+            <div className="campo" style={{ margin: 0, maxWidth: 200 }}>
+              <input placeholder="Filtrar por DPI…" value={busquedaDpi} onChange={(e) => setBusquedaDpi(e.target.value)} />
+            </div>
           </div>
         </div>
 
@@ -187,6 +240,7 @@ export default function SignosVitales() {
                 <tr>
                   <th>Fecha</th>
                   <th>Paciente</th>
+                  <th>DPI</th>
                   <th>Temp.</th>
                   <th>Presión</th>
                   <th>F. cardíaca</th>
@@ -202,6 +256,7 @@ export default function SignosVitales() {
                   <tr key={r.id}>
                     <td>{new Date(r.fecha).toLocaleString('es-GT')}</td>
                     <td>{r.paciente_nombre}</td>
+                    <td>{r.paciente_dpi || '—'}</td>
                     <td>{r.temperatura ? `${r.temperatura} °C` : '—'}</td>
                     <td>{r.presion_sistolica || r.presion_diastolica ? `${r.presion_sistolica || '—'}/${r.presion_diastolica || '—'}` : '—'}</td>
                     <td>{r.frecuencia_cardiaca ? `${r.frecuencia_cardiaca} lpm` : '—'}</td>

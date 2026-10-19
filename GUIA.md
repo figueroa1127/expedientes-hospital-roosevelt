@@ -40,7 +40,7 @@ Para entrar hay que tener una cuenta. El sistema le muestra a cada persona
 |---|---|---|
 | **Paciente** | Con su **DPI y contraseña** | Ver su propio expediente, sus signos vitales y sus citas |
 | **Doctor** | Con su correo | Ver pacientes, abrir su expediente, registrar consultas, recetas, solicitar exámenes y ver su agenda |
-| **Enfermería** | Con su correo | Consultar expedientes, la bandeja de laboratorio, la agenda y registrar/ver signos vitales |
+| **Enfermería** | Con su correo | Consultar expedientes, la agenda y registrar/ver signos vitales |
 | **Laboratorio** | Con su correo | Ver la bandeja de exámenes y registrar resultados (o adjuntar el archivo del resultado) |
 | **Admisión** | Con su correo | Registrar/actualizar pacientes, agendar y reagendar citas, y ver el panel con gráficas |
 | **Administrador** | Con su correo | Hacer todo lo anterior y además crear cuentas de usuario |
@@ -109,7 +109,7 @@ los datos solos para que puedas probarlo sin crear cuentas.
 ### 4.7 Solicitar un examen de laboratorio
 
 1. **El Doctor** abre el expediente del paciente y solicita el examen.
-2. **Laboratorio** (o Enfermería) ve la orden en el menú **Laboratorio**.
+2. **Laboratorio** ve la orden en el menú **Laboratorio**.
 3. Ahí escribe el resultado o adjunta el archivo (PDF o foto) y la orden queda
    como **completada**.
 
@@ -117,13 +117,17 @@ los datos solos para que puedas probarlo sin crear cuentas.
 
 1. Entra como **Enfermería**.
 2. Puedes hacerlo de dos maneras:
-   - Menú **Signos vitales** → **+ Registrar signos** (eliges al paciente), o
+   - Menú **Signos vitales** → **+ Registrar signos vitales**, o
    - Abre el expediente de un paciente y usa la tarjeta **Signos vitales**.
-3. Llena al menos un dato: temperatura, presión (sistólica/diastólica),
+3. En el menú **Signos vitales** escribes el **DPI del paciente** y presionas
+   **Buscar**; el sistema confirma el nombre antes de guardar.
+4. Llena al menos un dato: temperatura, presión (sistólica/diastólica),
    frecuencia cardíaca, frecuencia respiratoria, saturación de oxígeno, peso o
    talla. También puedes agregar una nota.
-4. Guarda. El registro aparece con la fecha y **quién lo capturó**, y el
+5. Guarda. El registro aparece con la fecha y **quién lo capturó**, y el
    paciente puede ver sus propios signos en su expediente.
+6. En la sección **Registros recientes** puedes **filtrar por nombre o por DPI**
+   para encontrar rápido las tomas de un paciente.
 
 ### 4.9 Agendar una cita (lo hace Admisión, Administrador o el Doctor)
 

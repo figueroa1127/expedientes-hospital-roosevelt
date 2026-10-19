@@ -12,6 +12,7 @@ const SELECT_SIGNOS = `
          s.frecuencia_cardiaca, s.frecuencia_respiratoria, s.saturacion_oxigeno,
          s.peso, s.talla, s.notas,
          u.nombre AS paciente_nombre,
+         p.dpi AS paciente_dpi,
          ur.nombre AS registrado_por_nombre
   FROM signos_vitales s
   JOIN pacientes p ON p.id = s.paciente_id

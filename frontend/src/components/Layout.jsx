@@ -19,7 +19,6 @@ const ENLACES_POR_ROL = {
   ],
   enfermeria: [
     { to: '/pacientes', etiqueta: 'Pacientes' },
-    { to: '/laboratorio', etiqueta: 'Laboratorio' },
     { to: '/signos', etiqueta: 'Signos vitales' },
   ],
   medico: [

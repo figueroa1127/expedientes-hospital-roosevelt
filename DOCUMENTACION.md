@@ -148,8 +148,8 @@ Roles según el código de cada ruta del servidor.
 | Ver agenda completa de citas | — | — | ✅ | — | ✅ | ✅ |
 | Definir su horario de atención (cupos) | — | ✅ | — | — | — | ✅ |
 | Ver panel de control (indicadores) | — | — | — | — | ✅ | ✅ |
-| Ver bandeja de laboratorio | — | ✅ | ✅ | ✅ | — | ✅ |
-| Registrar resultado/archivo de laboratorio | — | ✅ | ✅ | ✅ | — | ✅ |
+| Ver bandeja de laboratorio | — | ✅ | — | ✅ | — | ✅ |
+| Registrar resultado/archivo de laboratorio | — | ✅ | — | ✅ | — | ✅ |
 | Registrar signos vitales | — | ✅ | ✅ | — | — | — |
 | Ver signos vitales de un paciente | — | ✅ | ✅ | — | — | ✅ |
 | Crear usuarios | — | — | — | — | — | ✅ |
@@ -368,9 +368,9 @@ valida el nuevo cupo (409 si está ocupado).
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| GET | `/api/laboratorio` | 🔒 medico, enfermeria, administrador, laboratorio | Bandeja con todas las órdenes |
-| PUT | `/api/laboratorio/:id` | 🔒 medico, enfermeria, administrador, laboratorio | Registra resultado, adjunta archivo y/o cambia estado |
-| GET | `/api/laboratorio/:id/archivo` | 🔒 medico, enfermeria, administrador, laboratorio | Descarga el archivo adjunto |
+| GET | `/api/laboratorio` | 🔒 medico, administrador, laboratorio | Bandeja con todas las órdenes |
+| PUT | `/api/laboratorio/:id` | 🔒 medico, administrador, laboratorio | Registra resultado, adjunta archivo y/o cambia estado |
+| GET | `/api/laboratorio/:id/archivo` | 🔒 medico, administrador, laboratorio | Descarga el archivo adjunto |
 
 **PUT `/api/laboratorio/:id`**
 ```json
@@ -408,7 +408,7 @@ En la interfaz, el panel se muestra únicamente a **admisión** y **administrado
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| GET | `/api/signos` | 🔒 medico, enfermeria, administrador | Registros más recientes de todos los pacientes |
+| GET | `/api/signos` | 🔒 medico, enfermeria, administrador | Registros más recientes de todos los pacientes (incluye el DPI) |
 | GET | `/api/signos/mio` | 🔒 paciente | Los signos vitales del propio paciente |
 | GET | `/api/signos/paciente/:pacienteId` | 🔒 medico, enfermeria, administrador | Historial de signos de un paciente |
 | POST | `/api/signos` | 🔒 medico, enfermeria | Registra una toma de signos vitales |
@@ -430,6 +430,7 @@ En la interfaz, el panel se muestra únicamente a **admisión** y **administrado
 **Respuesta de un listado (GET)**
 ```json
 [ { "id": 19, "paciente_id": 1, "paciente_nombre": "José Pérez",
+    "paciente_dpi": "1234567890101",
     "fecha": "2026-10-15 09:30:00", "temperatura": "37.0",
     "presion_sistolica": 120, "presion_diastolica": 80,
     "frecuencia_cardiaca": 76, "frecuencia_respiratoria": 18,
@@ -438,8 +439,10 @@ En la interfaz, el panel se muestra únicamente a **admisión** y **administrado
 ```
 
 Los signos de un paciente también se muestran dentro de la tarjeta
-**Signos vitales** del expediente (`VistaExpediente.jsx`). Cada registro queda
-anotado en `auditoria` (`registrar_signos_vitales`).
+**Signos vitales** del expediente (`VistaExpediente.jsx`). En la pantalla
+**Signos vitales** (`SignosVitales.jsx`) el personal localiza al paciente por su
+**DPI** (búsqueda) y puede filtrar los registros recientes por nombre o por DPI.
+Cada registro queda anotado en `auditoria` (`registrar_signos_vitales`).
 
 ---
 
@@ -525,10 +528,10 @@ nube (Neon + Render + Vercel):
 4. `POST /api/auth/login` con los 6 roles → token emitido correctamente.
 5. `GET /api/pacientes`, `GET /api/expedientes/paciente/:id`, `GET /api/citas` → datos coherentes (expediente con consultas y recetas).
 6. `GET /api/reportes/resumen` → totales y series (consultas por mes, citas por estado, diagnósticos, tipo de sangre, grupo de edad).
-7. Flujo de laboratorio: `POST /api/expedientes/1/ordenes` (médico) → `GET /api/laboratorio` (laboratorio/enfermería) → `PUT /api/laboratorio/:id` con resultado y archivo → orden completada.
+7. Flujo de laboratorio: `POST /api/expedientes/1/ordenes` (médico) → `GET /api/laboratorio` (laboratorio) → `PUT /api/laboratorio/:id` con resultado y archivo → orden completada.
 8. Acceso de pacientes: `POST /api/auth/paciente/acceso` con DPI inexistente → 404 («solicítelo en admisión»); paciente sin acceso → «crear acceso» activa y permite ingresar; DPI ya activo → 409 («el usuario es existente»); contraseña incorrecta → 401.
 9. Alta de paciente sin contraseña (`POST /api/pacientes` como admisión) → ficha creada con `acceso_activo=false`; el paciente la activa con su DPI.
 10. Citas: `PUT /api/citas/mi-horario` (médico) guarda franjas; `GET /api/citas/disponibilidad/:medicoId` devuelve cupos y marca los ocupados; `POST /api/citas` en un horario ocupado → 409 («Ese horario ya está ocupado…»).
-11. Signos vitales: `POST /api/signos` (enfermería) → 201; sin ningún signo → 400; paciente con rol `paciente` → 403; `GET /api/signos` y `GET /api/signos/paciente/:id` devuelven el registro con `registrado_por_nombre`.
+11. Signos vitales: `POST /api/signos` (enfermería) → 201; sin ningún signo → 400; paciente con rol `paciente` → 403; rol `enfermeria` ya no accede a `/api/laboratorio` → 403; `GET /api/signos` y `GET /api/signos/paciente/:id` devuelven el registro con `registrado_por_nombre` y `paciente_dpi`.
 12. `npm run build` del frontend → compilación sin errores.
 13. Despliegue: login por rol, acceso de pacientes por DPI, agenda con cupos y búsqueda de citas por fecha funcionando a través de `vercel.app → onrender.com → Neon`.
