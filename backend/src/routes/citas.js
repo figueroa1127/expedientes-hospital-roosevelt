@@ -58,7 +58,7 @@ async function validarCupo(medicoId, fecha, excluirId) {
     sql += ' AND id <> $4';
   }
   const ocupado = await pool.query(sql, params);
-  if (ocupado.rows[0]) return 'Ese horario ya está ocupado. Elige otro cupo.';
+  if (ocupado.rows[0]) return 'Ese horario ya está ocupado. Elige otra hora u otra fecha.';
   return null;
 }
 
@@ -192,7 +192,7 @@ router.get('/disponibilidad/:medicoId', asyncHandler(async (req, res) => {
 
   let cupos = [];
   for (const r of rangos.rows) cupos.push(...generarCupos(r.hora_inicio, r.hora_fin));
-  cupos = [...new Set(cupos)].filter((c) => !ocupados.has(c));
+  cupos = [...new Set(cupos)];
 
   if (fecha === fechaHoy()) {
     const ahora = new Date();
@@ -203,7 +203,12 @@ router.get('/disponibilidad/:medicoId', asyncHandler(async (req, res) => {
     });
   }
 
-  res.json({ fecha, dia: DIAS[dia], cupos });
+  // `detalle` incluye todos los cupos del día marcando los ya ocupados, para que
+  // la interfaz pueda avisar que ese horario no está disponible.
+  const detalle = cupos.map((c) => ({ hora: c, disponible: !ocupados.has(c) }));
+  const libres = cupos.filter((c) => !ocupados.has(c));
+
+  res.json({ fecha, dia: DIAS[dia], cupos: libres, detalle });
 }));
 
 // POST /api/citas -> agendar una cita (admisión, administrador o médico)

@@ -454,6 +454,17 @@ button {
   animation: aparecer 0.3s ease both;
 }
 
+.mensaje-aviso {
+  background: var(--ambar-suave);
+  color: var(--ambar);
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+  border: 1px solid rgba(163, 106, 18, 0.25);
+  animation: aparecer 0.3s ease both;
+}
+
 .cuentas-demo {
   margin-top: 22px;
   padding-top: 18px;

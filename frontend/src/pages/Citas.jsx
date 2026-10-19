@@ -22,6 +22,7 @@ function aInputFechaDia(f) {
 export default function Citas() {
   const { token, usuario } = useAuth();
   const [citas, setCitas] = useState([]);
+  const [filtroFecha, setFiltroFecha] = useState('');
   const [medicos, setMedicos] = useState([]);
   const [pacientes, setPacientes] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -35,6 +36,7 @@ export default function Citas() {
   const [buscandoPaciente, setBuscandoPaciente] = useState(false);
   const [fecha, setFecha] = useState('');
   const [cupos, setCupos] = useState([]);
+  const [cuposDetalle, setCuposDetalle] = useState([]);
   const [cupoSeleccionado, setCupoSeleccionado] = useState('');
   const [cargandoCupos, setCargandoCupos] = useState(false);
   const [motivo, setMotivo] = useState('');
@@ -44,6 +46,7 @@ export default function Citas() {
   const [rmedico, setRmedico] = useState('');
   const [rfecha, setRfecha] = useState('');
   const [rcupos, setRcupos] = useState([]);
+  const [rcuposDetalle, setRcuposDetalle] = useState([]);
   const [rcupoSeleccionado, setRcupoSeleccionado] = useState('');
   const [cargandoRcupos, setCargandoRcupos] = useState(false);
   const [rmotivo, setRmotivo] = useState('');
@@ -57,6 +60,10 @@ export default function Citas() {
   const puedeCambiarEstado = ['medico', 'admision', 'administrador'].includes(usuario.rol);
   const esMedico = usuario.rol === 'medico';
   const agendarPorDpi = ['admision', 'administrador'].includes(usuario.rol);
+  const puedeFiltrarPorFecha = ['admision', 'administrador'].includes(usuario.rol);
+  const citasFiltradas = filtroFecha
+    ? citas.filter((c) => aInputFechaDia(c.fecha) === filtroFecha)
+    : citas;
 
   async function cargarTodo() {
     setCargando(true);
@@ -96,6 +103,7 @@ export default function Citas() {
     let activo = true;
     if (!medicoId || !fecha) {
       setCupos([]);
+      setCuposDetalle([]);
       setCupoSeleccionado('');
       return () => { activo = false; };
     }
@@ -105,6 +113,7 @@ export default function Citas() {
       .then((r) => {
         if (!activo) return;
         setCupos(r.cupos || []);
+        setCuposDetalle(r.detalle || (r.cupos || []).map((h) => ({ hora: h, disponible: true })));
         setCupoSeleccionado('');
       })
       .catch((e) => activo && setError(e.message))
@@ -116,6 +125,7 @@ export default function Citas() {
     let activo = true;
     if (!rmedico || !rfecha || !reagendando) {
       setRcupos([]);
+      setRcuposDetalle([]);
       return () => { activo = false; };
     }
     setCargandoRcupos(true);
@@ -124,6 +134,7 @@ export default function Citas() {
       .then((r) => {
         if (!activo) return;
         setRcupos(r.cupos || []);
+        setRcuposDetalle(r.detalle || (r.cupos || []).map((h) => ({ hora: h, disponible: true })));
         setRcupoSeleccionado('');
       })
       .catch((e) => activo && setError(e.message))
@@ -375,22 +386,42 @@ export default function Citas() {
                   <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Horarios disponibles</label>
                   {cargandoCupos ? (
                     <p className="vacio">Cargando horarios…</p>
-                  ) : cupos.length === 0 ? (
-                    <p className="vacio">El médico no tiene cupos disponibles ese día.</p>
+                  ) : cuposDetalle.length === 0 ? (
+                    <p className="vacio">El médico no tiene disponibilidad ese día. Elige otra fecha.</p>
                   ) : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {cupos.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          className={cupoSeleccionado === c ? 'boton-primario' : 'boton-secundario'}
-                          style={{ width: 'auto' }}
-                          onClick={() => setCupoSeleccionado(c)}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {cuposDetalle.map((c) => (
+                          <button
+                            key={c.hora}
+                            type="button"
+                            disabled={!c.disponible}
+                            className={cupoSeleccionado === c.hora ? 'boton-primario' : 'boton-secundario'}
+                            style={{
+                              width: 'auto',
+                              opacity: c.disponible ? 1 : 0.45,
+                              cursor: c.disponible ? 'pointer' : 'not-allowed',
+                              textDecoration: c.disponible ? 'none' : 'line-through',
+                            }}
+                            title={c.disponible ? '' : 'Horario no disponible: ya tiene una cita'}
+                            onClick={() => c.disponible && setCupoSeleccionado(c.hora)}
+                          >
+                            {c.hora}
+                          </button>
+                        ))}
+                      </div>
+                      {cupos.length === 0 ? (
+                        <p className="mensaje-aviso">
+                          El médico ya tiene citas en todos los horarios de ese día. Elige otra hora u otra fecha.
+                        </p>
+                      ) : (
+                        cuposDetalle.some((c) => !c.disponible) && (
+                          <p className="mensaje-aviso">
+                            Los horarios tachados no están disponibles porque ya tienen una cita. Elige otra hora u otra fecha.
+                          </p>
+                        )
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -435,22 +466,42 @@ export default function Citas() {
                 <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Horarios disponibles</label>
                 {cargandoRcupos ? (
                   <p className="vacio">Cargando horarios…</p>
-                ) : rcupos.length === 0 ? (
-                  <p className="vacio">No hay cupos disponibles ese día.</p>
+                ) : rcuposDetalle.length === 0 ? (
+                  <p className="vacio">No hay disponibilidad ese día. Elige otra fecha.</p>
                 ) : (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {rcupos.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        className={rcupoSeleccionado === c ? 'boton-primario' : 'boton-secundario'}
-                        style={{ width: 'auto' }}
-                        onClick={() => setRcupoSeleccionado(c)}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {rcuposDetalle.map((c) => (
+                        <button
+                          key={c.hora}
+                          type="button"
+                          disabled={!c.disponible}
+                          className={rcupoSeleccionado === c.hora ? 'boton-primario' : 'boton-secundario'}
+                          style={{
+                            width: 'auto',
+                            opacity: c.disponible ? 1 : 0.45,
+                            cursor: c.disponible ? 'pointer' : 'not-allowed',
+                            textDecoration: c.disponible ? 'none' : 'line-through',
+                          }}
+                          title={c.disponible ? '' : 'Horario no disponible: ya tiene una cita'}
+                          onClick={() => c.disponible && setRcupoSeleccionado(c.hora)}
+                        >
+                          {c.hora}
+                        </button>
+                      ))}
+                    </div>
+                    {rcupos.length === 0 ? (
+                      <p className="mensaje-aviso">
+                        El médico ya tiene citas en todos los horarios de ese día. Elige otra hora u otra fecha.
+                      </p>
+                    ) : (
+                      rcuposDetalle.some((c) => !c.disponible) && (
+                        <p className="mensaje-aviso">
+                          Los horarios tachados no están disponibles porque ya tienen una cita. Elige otra hora u otra fecha.
+                        </p>
+                      )
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -464,10 +515,34 @@ export default function Citas() {
       )}
 
       <div className="tarjeta">
+        {puedeFiltrarPorFecha && (
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
+            <div className="campo" style={{ maxWidth: 220, margin: 0 }}>
+              <label>Buscar por fecha</label>
+              <input
+                type="date"
+                value={filtroFecha}
+                onChange={(e) => setFiltroFecha(e.target.value)}
+              />
+            </div>
+            {filtroFecha && (
+              <button className="boton-secundario" onClick={() => setFiltroFecha('')}>
+                Limpiar
+              </button>
+            )}
+            {filtroFecha && (
+              <span style={{ color: 'var(--gris-texto)', fontSize: '0.85rem', paddingBottom: 6 }}>
+                {citasFiltradas.length} cita(s) el {filtroFecha}
+              </span>
+            )}
+          </div>
+        )}
         {cargando ? (
           <p className="vacio">Cargando citas…</p>
         ) : citas.length === 0 ? (
           <p className="vacio">No hay citas registradas.</p>
+        ) : citasFiltradas.length === 0 ? (
+          <p className="vacio">No hay citas para la fecha seleccionada.</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table>
@@ -482,7 +557,7 @@ export default function Citas() {
                 </tr>
               </thead>
               <tbody>
-                {citas.map((c) => (
+                {citasFiltradas.map((c) => (
                   <tr key={c.id}>
                     <td>{new Date(String(c.fecha).replace(' ', 'T')).toLocaleString('es-GT')}</td>
                     <td>{c.paciente_nombre}</td>
