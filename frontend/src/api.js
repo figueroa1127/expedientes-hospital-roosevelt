@@ -71,4 +71,6 @@ export const api = {
 
   usuarios: (token) => solicitud('/usuarios', { token }),
   crearUsuario: (token, datos) => solicitud('/usuarios', { method: 'POST', body: datos, token }),
+  actualizarUsuario: (token, id, datos) => solicitud(`/usuarios/${id}`, { method: 'PUT', body: datos, token }),
+  actualizarUsuarioPatch: (token, id, datos) => solicitud(`/usuarios/${id}`, { method: 'PATCH', body: datos, token }),
 };
