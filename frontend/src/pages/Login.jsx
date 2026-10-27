@@ -86,11 +86,7 @@ export default function Login() {
               <path d="M12 6v12M6 12h12" />
             </svg>
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
-            <span>Hospital Roosevelt</span>
-            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Guatemala, Guatemala</span>
-            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Expediente médico digital</span>
-          </div>
+          Hospital Roosevelt
         </div>
         <div className="login-centro">
           <h1>Expediente médico digital</h1>
@@ -99,9 +95,14 @@ export default function Login() {
             con acceso diferenciado para personal médico, administrativo y pacientes.
           </p>
         </div>
-        <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>
-          By Edy Figueroa, Joel Castillo
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>
+            Guatemala, Guatemala - Expediente médico digital - Hospital Roosevelt
+          </p>
+          <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)' }}>
+            By Edy Figueroa, Joel Castillo
+          </p>
+        </div>
       </div>
 
       <div className="login-formulario">
