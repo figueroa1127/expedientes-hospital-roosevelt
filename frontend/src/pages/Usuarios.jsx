@@ -69,12 +69,25 @@ export default function Usuarios() {
     setEditPassword('');
     setError('');
     setMensaje('');
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }
 
   function cerrarEditar() {
     setEditando(null);
     setEditPassword('');
   }
+
+  useEffect(() => {
+    if (editando) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editando]);
 
   async function guardarEdicion(e) {
     e.preventDefault();
