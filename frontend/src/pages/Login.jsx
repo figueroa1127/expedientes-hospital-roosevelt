@@ -86,9 +86,10 @@ export default function Login() {
               <path d="M12 6v12M6 12h12" />
             </svg>
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-            <span>Guatemala, Guatemala</span>
-            <span>Expediente médico digital - Hospital Roosevelt</span>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
+            <span>Hospital Roosevelt</span>
+            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Guatemala, Guatemala</span>
+            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Expediente médico digital</span>
           </div>
         </div>
         <div className="login-centro">
