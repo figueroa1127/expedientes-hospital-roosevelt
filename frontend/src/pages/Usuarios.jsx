@@ -186,7 +186,7 @@ export default function Usuarios() {
                     <td style={{ textTransform: 'capitalize' }}>{u.rol}</td>
                     <td style={{ textAlign: 'right' }}>
                       <button className="boton-secundario" style={{ width: 'auto', padding: '6px 10px' }} onClick={() => abrirEditar(u)}>
-                        Editar / Cambiar contraseña
+                        Editar
                       </button>
                     </td>
                   </tr>
