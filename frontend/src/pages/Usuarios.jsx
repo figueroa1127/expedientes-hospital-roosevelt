@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 
@@ -30,6 +30,7 @@ export default function Usuarios() {
   const [editRol, setEditRol] = useState('paciente');
   const [editPassword, setEditPassword] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const modalRef = useRef(null);
 
   async function cargar() {
     setCargando(true);
@@ -70,6 +71,9 @@ export default function Usuarios() {
     setError('');
     setMensaje('');
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    setTimeout(() => {
+      modalRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }, 0);
   }
 
   function cerrarEditar() {
@@ -81,6 +85,9 @@ export default function Usuarios() {
     if (editando) {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }, 0);
     } else {
       document.body.style.overflow = '';
     }
@@ -212,7 +219,7 @@ export default function Usuarios() {
 
       {editando && (
         <div className="modal-fondo" onClick={cerrarEditar}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal" ref={modalRef} onClick={(e) => e.stopPropagation()}>
             <div className="modal-cabecera">
               <h2>Editar usuario</h2>
               <button className="boton-icono" onClick={cerrarEditar}>
