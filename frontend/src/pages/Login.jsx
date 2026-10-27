@@ -94,9 +94,12 @@ export default function Login() {
             Un solo lugar para el historial clínico, las consultas y las citas de cada paciente,
             con acceso diferenciado para personal médico, administrativo y pacientes.
           </p>
+          <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginTop: 8 }}>
+            Guatemala, Guatemala
+          </p>
         </div>
-        <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-          Creado por Edy Figueroa y Joel Castillo · Sistema de expedientes médicos digitales
+        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+          By Edy Figueroa, Joel Castillo · Sistema de expedientes médicos digitales
         </p>
       </div>
 
